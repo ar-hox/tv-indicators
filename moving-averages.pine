@@ -59,6 +59,13 @@ panel_border_width = input.int(1, "Panel Border Width", minval=0, group=plot_pan
 panel_border_color = input.color(color.new(color.gray, 50), "Panel Border Color", group=plot_panel_group_title)
 panel_text_align = input.string(text.align_left, "Panel Text Align", options=[text.align_left, text.align_center, text.align_right], group=plot_panel_group_title)
 
+// --- Inputs: Alert Settings ---
+alert_group_title = "Alert Settings"
+alert_price_cross_sma1 = input.bool(false, title="Alert: Price Cross SMA 1", group=alert_group_title)
+alert_price_cross_ema1 = input.bool(false, title="Alert: Price Cross EMA 1", group=alert_group_title)
+alert_sma1_cross_sma2 = input.bool(false, title="Alert: SMA 1 Cross SMA 2", group=alert_group_title)
+alert_ema1_cross_ema2 = input.bool(false, title="Alert: EMA 1 Cross EMA 2", group=alert_group_title)
+
 // --- Calculations ---
 price = close
 sma1 = ta.sma(price, sma_len_1)
@@ -71,6 +78,36 @@ ema2 = ta.ema(price, ema_len_2)
 ema3 = ta.ema(price, ema_len_3)
 ema4 = ta.ema(price, ema_len_4)
 ema5 = ta.ema(price, ema_len_5)
+
+// --- Pre-calculate Cross Conditions ---
+price_cross_sma1_up = ta.crossover(price, sma1)
+price_cross_sma1_down = ta.crossunder(price, sma1)
+price_cross_ema1_up = ta.crossover(price, ema1)
+price_cross_ema1_down = ta.crossunder(price, ema1)
+sma1_cross_sma2_up = ta.crossover(sma1, sma2)
+sma1_cross_sma2_down = ta.crossunder(sma1, sma2)
+ema1_cross_ema2_up = ta.crossover(ema1, ema2)
+ema1_cross_ema2_down = ta.crossunder(ema1, ema2)
+
+// --- Timeframe Check ---
+is_allowed_tf = timeframe.period == "60" or timeframe.period == "240" or timeframe.period == "D" or timeframe.period == "W"
+
+// --- Alert Conditions ---
+// Price Cross SMA 1 Alerts
+alertcondition(alert_price_cross_sma1 and is_allowed_tf and price_cross_sma1_up, title="Price Cross Above SMA 1", message="{{ticker}} [{{timeframe.period}}] Price crossed ABOVE SMA {{plot_0}} (Bullish)")
+alertcondition(alert_price_cross_sma1 and is_allowed_tf and price_cross_sma1_down, title="Price Cross Below SMA 1", message="{{ticker}} [{{timeframe.period}}] Price crossed BELOW SMA {{plot_0}} (Bearish)")
+
+// Price Cross EMA 1 Alerts
+alertcondition(alert_price_cross_ema1 and is_allowed_tf and price_cross_ema1_up, title="Price Cross Above EMA 1", message="{{ticker}} [{{timeframe.period}}] Price crossed ABOVE EMA {{plot_5}} (Bullish)")
+alertcondition(alert_price_cross_ema1 and is_allowed_tf and price_cross_ema1_down, title="Price Cross Below EMA 1", message="{{ticker}} [{{timeframe.period}}] Price crossed BELOW EMA {{plot_5}} (Bearish)")
+
+// SMA 1 / SMA 2 Cross Alerts
+alertcondition(alert_sma1_cross_sma2 and is_allowed_tf and sma1_cross_sma2_up, title="SMA 1/SMA 2 Golden Cross", message="{{ticker}} [{{timeframe.period}}] SMA {{plot_0}} crossed ABOVE SMA {{plot_1}} (Golden Cross - Bullish)")
+alertcondition(alert_sma1_cross_sma2 and is_allowed_tf and sma1_cross_sma2_down, title="SMA 1/SMA 2 Death Cross", message="{{ticker}} [{{timeframe.period}}] SMA {{plot_0}} crossed BELOW SMA {{plot_1}} (Death Cross - Bearish)")
+
+// EMA 1 / EMA 2 Cross Alerts
+alertcondition(alert_ema1_cross_ema2 and is_allowed_tf and ema1_cross_ema2_up, title="EMA 1/EMA 2 Golden Cross", message="{{ticker}} [{{timeframe.period}}] EMA {{plot_5}} crossed ABOVE EMA {{plot_6}} (Golden Cross - Bullish)")
+alertcondition(alert_ema1_cross_ema2 and is_allowed_tf and ema1_cross_ema2_down, title="EMA 1/EMA 2 Death Cross", message="{{ticker}} [{{timeframe.period}}] EMA {{plot_5}} crossed BELOW EMA {{plot_6}} (Death Cross - Bearish)")
 
 // --- MA Plotting ---
 // Static titles for plot function
