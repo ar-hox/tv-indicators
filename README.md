@@ -7,7 +7,6 @@ This repository serves as my personal collection of custom indicators and strate
 *   [Indicators](#indicators)
     *   [MA Panel](#ma-panel)
 *   [Strategies](#strategies)
-*   [Contributing](#contributing)
 *   [License](#license)
 
 ## Indicators
@@ -51,10 +50,6 @@ This indicator plots multiple Simple Moving Averages (SMAs) and Exponential Movi
 
 *(Add descriptions for strategies here when available)*
 
-## Contributing
-
-Contributions, issues, and feature requests are welcome. Feel free to check [issues page](link-to-issues-page) if you want to contribute. *(Optional: Add more detailed contribution guidelines if needed)*
-
 ## License
 
-*(Specify your license here, e.g., MIT, Apache 2.0, or leave as proprietary)*
+This project is proprietary and all rights are reserved.
