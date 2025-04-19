@@ -1,0 +1,134 @@
+//@version=6
+indicator("MA Panel", shorttitle="MA Panel", overlay=true)
+
+// --- Custom Type for MA Data ---
+type maInfo
+    string id // e.g., "SMA 20"
+    float value
+    color clr
+    float distance // Distance from current price
+
+// --- Helper Function to Map String to Table Position ---
+f_stringToPosition(posString) =>
+    switch posString
+        "Top Left" => position.top_left
+        "Top Center" => position.top_center
+        "Top Right" => position.top_right
+        "Middle Left" => position.middle_left
+        "Middle Center" => position.middle_center
+        "Middle Right" => position.middle_right
+        "Bottom Left" => position.bottom_left
+        "Bottom Center" => position.bottom_center
+        "Bottom Right" => position.bottom_right
+        => position.top_right // Default fallback
+
+// --- Inputs: Simple Moving Averages (SMA) ---
+sma_group_title = "SMA Settings"
+sma_len_1 = input.int(20, title="SMA 1 Length", group=sma_group_title)
+sma_len_2 = input.int(50, title="SMA 2 Length", group=sma_group_title)
+sma_len_3 = input.int(100, title="SMA 3 Length", group=sma_group_title)
+sma_len_4 = input.int(200, title="SMA 4 Length", group=sma_group_title)
+sma_len_5 = input.int(330, title="SMA 5 Length", group=sma_group_title)
+sma_color_1 = input.color(color.new(#2196F3, 0), title="SMA 1 Color", group=sma_group_title) // Brighter Blue
+sma_color_2 = input.color(color.new(#F44336, 0), title="SMA 2 Color", group=sma_group_title) // Standard Red
+sma_color_3 = input.color(color.new(#9C27B0, 0), title="SMA 3 Color", group=sma_group_title) // Purple
+sma_color_4 = input.color(color.new(#FF9800, 0), title="SMA 4 Color", group=sma_group_title) // Orange (Replaced Black)
+sma_color_5 = input.color(color.new(#E91E63, 0), title="SMA 5 Color", group=sma_group_title) // Pink/Magenta
+
+// --- Inputs: Exponential Moving Averages (EMA) ---
+ema_group_title = "EMA Settings"
+ema_len_1 = input.int(9, title="EMA 1 Length", group=ema_group_title)
+ema_len_2 = input.int(21, title="EMA 2 Length", group=ema_group_title)
+ema_len_3 = input.int(50, title="EMA 3 Length", group=ema_group_title)
+ema_len_4 = input.int(200, title="EMA 4 Length", group=ema_group_title)
+ema_len_5 = input.int(330, title="EMA 5 Length", group=ema_group_title)
+ema_color_1 = input.color(color.new(#4CAF50, 0), title="EMA 1 Color", group=ema_group_title) // Standard Green
+ema_color_2 = input.color(color.new(#FFC107, 0), title="EMA 2 Color", group=ema_group_title) // Amber/Yellow
+ema_color_3 = input.color(color.new(#00BCD4, 0), title="EMA 3 Color", group=ema_group_title) // Cyan
+ema_color_4 = input.color(color.new(#757575, 0), title="EMA 4 Color", group=ema_group_title) // Darker Gray
+ema_color_5 = input.color(color.new(#8BC34A, 0), title="EMA 5 Color", group=ema_group_title) // Light Green
+
+// --- Inputs: Plotting & Panel Options ---
+plot_panel_group_title = "Plotting & Panel Options"
+line_width = input.int(2, title="Line Width", minval=1, maxval=5, group=plot_panel_group_title)
+show_panel = input.bool(true, title="Show Info Panel", group=plot_panel_group_title)
+panel_pos_input = input.string("Top Right", "Panel Position", options = ["Top Left", "Top Center", "Top Right", "Middle Left", "Middle Center", "Middle Right", "Bottom Left", "Bottom Center", "Bottom Right"], group=plot_panel_group_title)
+panel_size = input.string(size.small, "Panel Text Size", options=[size.auto, size.tiny, size.small, size.normal, size.large, size.huge], group=plot_panel_group_title)
+panel_bg_color = input.color(color.new(color.black, 75), "Panel Background Color", group=plot_panel_group_title)
+panel_border_width = input.int(1, "Panel Border Width", minval=0, group=plot_panel_group_title)
+panel_border_color = input.color(color.new(color.gray, 50), "Panel Border Color", group=plot_panel_group_title)
+panel_text_align = input.string(text.align_left, "Panel Text Align", options=[text.align_left, text.align_center, text.align_right], group=plot_panel_group_title)
+
+// --- Calculations ---
+price = close
+sma1 = ta.sma(price, sma_len_1)
+sma2 = ta.sma(price, sma_len_2)
+sma3 = ta.sma(price, sma_len_3)
+sma4 = ta.sma(price, sma_len_4)
+sma5 = ta.sma(price, sma_len_5)
+ema1 = ta.ema(price, ema_len_1)
+ema2 = ta.ema(price, ema_len_2)
+ema3 = ta.ema(price, ema_len_3)
+ema4 = ta.ema(price, ema_len_4)
+ema5 = ta.ema(price, ema_len_5)
+
+// --- MA Plotting ---
+// Static titles for plot function
+plot(sma1, title="SMA 1", color=sma_color_1, linewidth=line_width)
+plot(sma2, title="SMA 2", color=sma_color_2, linewidth=line_width)
+plot(sma3, title="SMA 3", color=sma_color_3, linewidth=line_width)
+plot(sma4, title="SMA 4", color=sma_color_4, linewidth=line_width)
+plot(sma5, title="SMA 5", color=sma_color_5, linewidth=line_width)
+plot(ema1, title="EMA 1", color=ema_color_1, linewidth=line_width)
+plot(ema2, title="EMA 2", color=ema_color_2, linewidth=line_width)
+plot(ema3, title="EMA 3", color=ema_color_3, linewidth=line_width)
+plot(ema4, title="EMA 4", color=ema_color_4, linewidth=line_width)
+plot(ema5, title="EMA 5", color=ema_color_5, linewidth=line_width)
+
+// --- Information Panel using Table (Dynamic Order) ---
+var table panelTable = table.new(position = f_stringToPosition(panel_pos_input), columns = 1, rows = 10,
+                                 bgcolor = panel_bg_color, border_width = panel_border_width, border_color = panel_border_color)
+
+if show_panel and barstate.islast
+    // Update table base properties
+    table.set_position(panelTable, f_stringToPosition(panel_pos_input))
+    table.set_bgcolor(panelTable, panel_bg_color)
+    table.set_border_width(panelTable, panel_border_width)
+    table.set_border_color(panelTable, panel_border_color)
+
+    // 1. Create maInfo instances
+    sma1Info = maInfo.new("SMA " + str.tostring(sma_len_1), sma1, sma_color_1, math.abs(sma1 - price))
+    sma2Info = maInfo.new("SMA " + str.tostring(sma_len_2), sma2, sma_color_2, math.abs(sma2 - price))
+    sma3Info = maInfo.new("SMA " + str.tostring(sma_len_3), sma3, sma_color_3, math.abs(sma3 - price))
+    sma4Info = maInfo.new("SMA " + str.tostring(sma_len_4), sma4, sma_color_4, math.abs(sma4 - price))
+    sma5Info = maInfo.new("SMA " + str.tostring(sma_len_5), sma5, sma_color_5, math.abs(sma5 - price))
+    ema1Info = maInfo.new("EMA " + str.tostring(ema_len_1), ema1, ema_color_1, math.abs(ema1 - price))
+    ema2Info = maInfo.new("EMA " + str.tostring(ema_len_2), ema2, ema_color_2, math.abs(ema2 - price))
+    ema3Info = maInfo.new("EMA " + str.tostring(ema_len_3), ema3, ema_color_3, math.abs(ema3 - price))
+    ema4Info = maInfo.new("EMA " + str.tostring(ema_len_4), ema4, ema_color_4, math.abs(ema4 - price))
+    ema5Info = maInfo.new("EMA " + str.tostring(ema_len_5), ema5, ema_color_5, math.abs(ema5 - price))
+
+    // 2. Build array from instances
+    maArray = array.from(sma1Info, sma2Info, sma3Info, sma4Info, sma5Info, ema1Info, ema2Info, ema3Info, ema4Info, ema5Info)
+
+    // 3. Sort the array MANUALLY (Bubble Sort) by distance
+    n = array.size(maArray)
+    for i = 0 to n - 2 // Outer loop for passes
+        for j = 0 to n - i - 2 // Inner loop for comparisons
+            // Compare adjacent elements based on distance
+            if array.get(maArray, j).distance > array.get(maArray, j + 1).distance
+                // Swap elements if needed
+                temp = array.get(maArray, j)
+                array.set(maArray, j, array.get(maArray, j + 1))
+                array.set(maArray, j + 1, temp)
+
+    // 4. Populate table based on the SORTED array
+    for i = 0 to n - 1
+        ma = array.get(maArray, i)
+        cellText = ma.id + ": " + str.tostring(ma.value, format.mintick)
+        table.cell(panelTable, 0, i, cellText, text_color = ma.clr, text_size = panel_size, text_halign = panel_text_align)
+
+// Hide table if disabled
+if not show_panel and barstate.islast
+    table.clear(panelTable, 0, 9) // Clear rows 0 through 9
+
