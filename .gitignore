@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+env/
+venv/
+*.env
+*.log
+
+# Sphinx
+docs/build/*
+!docs/build/.gitkeep
+docs/source/.DS_Store
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# Other
+*.bak
+*.tmp

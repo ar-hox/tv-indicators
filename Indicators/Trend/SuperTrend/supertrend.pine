@@ -1,0 +1,3 @@
+//@version=5
+indicator("SuperTrend", shorttitle="ST", overlay=true)
+// Pine Script code for SuperTrend

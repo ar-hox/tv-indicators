@@ -1,0 +1,3 @@
+//@version=5
+indicator("Moving Average", shorttitle="MA", overlay=true)
+// Pine Script code for Moving Average

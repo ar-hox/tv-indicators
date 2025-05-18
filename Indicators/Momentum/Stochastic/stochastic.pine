@@ -1,0 +1,3 @@
+//@version=5
+indicator("Stochastic", shorttitle="Stoch")
+// Pine Script code for Stochastic

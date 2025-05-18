@@ -1,0 +1,2 @@
+//@version=5
+indicator("Average True Range", shorttitle="ATR", overlay=false)

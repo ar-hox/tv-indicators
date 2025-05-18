@@ -1,0 +1,3 @@
+//@version=5
+strategy("MA Crossover Strategy", overlay=true)
+// Pine Script code for MA Crossover Strategy
