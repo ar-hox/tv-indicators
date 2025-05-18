@@ -1,3 +1,0 @@
-//@version=5
-indicator("Moving Average Convergence Divergence", shorttitle="MACD")
-// Pine Script code for MACD

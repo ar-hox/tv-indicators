@@ -1,1 +1,0 @@
-# Bollinger Bands Indicator

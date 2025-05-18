@@ -1,3 +1,0 @@
-//@version=5
-indicator("On Balance Volume", shorttitle="OBV")
-// Pine Script code for OBV

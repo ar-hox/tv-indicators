@@ -1,3 +1,0 @@
-//@version=5
-indicator("Relative Strength Index", shorttitle="RSI")
-// Pine Script code for RSI

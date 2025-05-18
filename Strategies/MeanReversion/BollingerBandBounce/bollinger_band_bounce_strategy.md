@@ -1,1 +1,0 @@
-# Bollinger Band Bounce Strategy

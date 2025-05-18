@@ -1,3 +1,0 @@
-//@version=5
-indicator("Bollinger Bands", shorttitle="BB", overlay=true)
-// Pine Script code for Bollinger Bands
