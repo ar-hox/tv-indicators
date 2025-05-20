@@ -22,6 +22,7 @@ version = '0.1'
 extensions = [
     'sphinx_rtd_theme',        # Read the Docs theme
     'myst_parser',             # For Markdown support
+    'sphinx_copybutton',       # Add 'Copy' buttons to code blocks
 ]
 
 templates_path = ['_templates']
