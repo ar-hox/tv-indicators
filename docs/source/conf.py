@@ -5,18 +5,17 @@
 
 import os
 import sys
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
-# sys.path.insert(0, os.path.abspath('../..')) # To access root directory for potential autodoc
+from pathlib import Path
+
+# Add project root to sys.path for potential autodoc usage
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 project = 'Pine Script V6 Master Repository'
-copyright = '2024, Pine Script V6 Master Repository Contributors'
+copyright = '2025, Pine Script V6 Master Repository Contributors'
 author = 'Pine Script V6 Master Repository Contributors'
-release = '0.1.0'
-version = '0.1'
+release = '1.0.0'
+version = '1.0'
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -26,41 +25,42 @@ extensions = [
 ]
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [
+    '_build', 
+    'Thumbs.db', 
+    '.DS_Store',
+    '**/.git',
+    '**/node_modules',
+    '**/__pycache__'
+]
 
 # The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
 }
 
 # The master toctree document.
-# For Sphinx 4.0+, root_doc is preferred over master_doc
-# master_doc = 'index' # For older Sphinx
-root_doc = 'index' # For Sphinx 4.0+
+root_doc = 'index'
 
 language = 'en'
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static'] # If you have custom static files (css, js)
-# html_logo = "_static/logo.png" # Optional: if you have a logo
-# html_favicon = "_static/favicon.ico" # Optional: if you have a favicon
+html_static_path = ['_static']
 
-# html_theme_options = {
-#     'logo_only': False,
-#     'display_version': True,
-#     'prev_next_buttons_location': 'bottom',
-#     'style_external_links': False,
-#     'vcs_pageview_mode': '',
-#     # Toc options
-#     'collapse_navigation': True,
-#     'sticky_navigation': True,
-#     'navigation_depth': 4,
-#     'includehidden': True,
-#     'titles_only': False
-# }
+# Theme options
+html_theme_options = {
+    'logo_only': False,
+    'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': False,
+    'collapse_navigation': True,
+    'sticky_navigation': True,
+    'navigation_depth': 4,
+    'includehidden': True,
+    'titles_only': False
+}
 
 # -- MyST Parser Configuration -----------------------------------------------
 myst_enable_extensions = [
@@ -72,15 +72,16 @@ myst_enable_extensions = [
     "smartquotes",       # Convert quotes to smart quotes
     "tasklist",          # For GFM task lists - [ ] and - [x]
 ]
-myst_heading_anchors = 3 # Auto-generate header anchors up to level 3 for easy linking
+myst_heading_anchors = 3  # Auto-generate header anchors up to level 3
 
 # -- Options for intersphinx extension ---------------------------------------
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None)
+}
 
 # -- Options for todo extension ----------------------------------------------
 todo_include_todos = True
 
-# --- Custom CSS or JS (if any) ---
-# def setup(app):
-#     app.add_css_file('custom.css') # place in _static/custom.css
+# -- Copy button configuration -----------------------------------------------
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
