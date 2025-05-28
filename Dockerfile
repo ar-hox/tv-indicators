@@ -14,11 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the repository's content into the container at /app
 COPY . .
 
-# Build the Sphinx documentation
-# The -b html flag specifies the HTML builder.
-# docs/source is the input directory where conf.py and source files (.rst,.md) are located.
-# docs/build/html is the output directory for the generated HTML files.
-RUN sphinx-build -b html docs/source docs/build/html
+# Run the documentation build script to ensure docs are synchronized
+RUN chmod +x build_docs.sh && ./build_docs.sh
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000

@@ -1,0 +1,123 @@
+//@version=6
+
+//@description Example strategy template following coding guidelines
+
+strategy("Strategy Name Template", 
+         shorttitle="SNT", 
+         overlay=true,
+         initial_capital=10000,
+         default_qty_type=strategy.percent_of_equity,
+         default_qty_value=10,
+         commission_type=strategy.commission.percent,
+         commission_value=0.1)
+
+// === IMPORTS ===
+// import Username/LibraryName/Version as alias
+
+// === CONSTANTS ===
+const string GROUP_ENTRY = "Entry Settings"
+const string GROUP_EXIT = "Exit Settings"
+const string GROUP_RISK = "Risk Management"
+const string GROUP_VISUAL = "Visual Settings"
+
+// === INPUTS ===
+
+// Entry parameters
+fast_length = input.int(10, "Fast MA Length", minval=1, group=GROUP_ENTRY,
+                        tooltip="Fast moving average period")
+slow_length = input.int(21, "Slow MA Length", minval=1, group=GROUP_ENTRY,
+                        tooltip="Slow moving average period")
+source = input.source(close, "Source", group=GROUP_ENTRY)
+
+// Exit parameters
+use_take_profit = input.bool(true, "Use Take Profit", group=GROUP_EXIT)
+take_profit_pct = input.float(4.0, "Take Profit %", minval=0.1, maxval=50.0, 
+                              step=0.1, group=GROUP_EXIT)
+use_stop_loss = input.bool(true, "Use Stop Loss", group=GROUP_EXIT)
+stop_loss_pct = input.float(2.0, "Stop Loss %", minval=0.1, maxval=50.0, 
+                            step=0.1, group=GROUP_EXIT)
+
+// Risk management
+position_size = input.float(10.0, "Position Size %", minval=1.0, maxval=100.0,
+                            step=1.0, group=GROUP_RISK,
+                            tooltip="Percentage of equity per trade")
+
+// Visual settings
+show_mas = input.bool(true, "Show Moving Averages", group=GROUP_VISUAL)
+ma_color_fast = input.color(color.blue, "Fast MA Color", group=GROUP_VISUAL)
+ma_color_slow = input.color(color.red, "Slow MA Color", group=GROUP_VISUAL)
+
+// === USER-DEFINED FUNCTIONS ===
+
+//@function calculateMA
+//@param {series<float>} src Price source
+//@param {int} length MA period
+//@returns {float} Moving average value
+calculateMA(series<float> src, int length) =>
+    ta.sma(src, length)
+
+//@function getLongCondition
+//@param {float} fast_ma Fast moving average
+//@param {float} slow_ma Slow moving average
+//@param {float} fast_ma_prev Previous fast MA
+//@param {float} slow_ma_prev Previous slow MA
+//@returns {bool} True if long entry condition is met
+getLongCondition(float fast_ma, float slow_ma, float fast_ma_prev, float slow_ma_prev) =>
+    // Bullish crossover
+    fast_ma > slow_ma and fast_ma_prev <= slow_ma_prev
+
+//@function getShortCondition
+//@param {float} fast_ma Fast moving average
+//@param {float} slow_ma Slow moving average
+//@param {float} fast_ma_prev Previous fast MA
+//@param {float} slow_ma_prev Previous slow MA
+//@returns {bool} True if short entry condition is met
+getShortCondition(float fast_ma, float slow_ma, float fast_ma_prev, float slow_ma_prev) =>
+    // Bearish crossover
+    fast_ma < slow_ma and fast_ma_prev >= slow_ma_prev
+
+// === CORE CALCULATIONS ===
+
+// Moving averages
+fast_ma = calculateMA(source, fast_length)
+slow_ma = calculateMA(source, slow_length)
+fast_ma_prev = calculateMA(source[1], fast_length)
+slow_ma_prev = calculateMA(source[1], slow_length)
+
+// Entry conditions
+long_condition = getLongCondition(fast_ma, slow_ma, fast_ma_prev, slow_ma_prev)
+short_condition = getShortCondition(fast_ma, slow_ma, fast_ma_prev, slow_ma_prev)
+
+// === STRATEGY CALLS ===
+
+// Entry orders
+if long_condition
+    strategy.entry("Long", strategy.long, qty_percent=position_size)
+
+if short_condition
+    strategy.entry("Short", strategy.short, qty_percent=position_size)
+
+// Exit orders
+if use_take_profit
+    strategy.exit("TP Long", "Long", profit=close * take_profit_pct / 100 / syminfo.mintick)
+    strategy.exit("TP Short", "Short", profit=close * take_profit_pct / 100 / syminfo.mintick)
+
+if use_stop_loss
+    strategy.exit("SL Long", "Long", loss=close * stop_loss_pct / 100 / syminfo.mintick)
+    strategy.exit("SL Short", "Short", loss=close * stop_loss_pct / 100 / syminfo.mintick)
+
+// === PLOTTING AND VISUALS ===
+
+// Moving averages
+plot(show_mas ? fast_ma : na, "Fast MA", color=ma_color_fast, linewidth=1)
+plot(show_mas ? slow_ma : na, "Slow MA", color=ma_color_slow, linewidth=2)
+
+// Entry signals
+plotshape(long_condition, "Long Entry", shape.triangleup, location.belowbar, 
+          color.green, size=size.small)
+plotshape(short_condition, "Short Entry", shape.triangledown, location.abovebar, 
+          color.red, size=size.small)
+
+// === ALERTS ===
+alertcondition(long_condition, "Long Entry Signal", "Long entry signal detected")
+alertcondition(short_condition, "Short Entry Signal", "Short entry signal detected")

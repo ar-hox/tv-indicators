@@ -8,3 +8,5 @@ This section provides documentation for various Pine Script indicators available
    :maxdepth: 2
    :caption: Indicators
    :glob:
+
+   Indicators/README

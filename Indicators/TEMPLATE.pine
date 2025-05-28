@@ -1,0 +1,80 @@
+//@version=6
+
+//@description Example indicator template following coding guidelines
+
+indicator("Indicator Name Template", 
+         shorttitle="INT", 
+         overlay=false,
+         precision=2,
+         max_bars_back=1000)
+
+// === IMPORTS ===
+// import Username/LibraryName/Version as alias
+
+// === CONSTANTS ===
+const string GROUP_MAIN = "Main Settings"
+const string GROUP_VISUAL = "Visual Settings"
+
+// === INPUTS ===
+length = input.int(14, "Length", minval=1, group=GROUP_MAIN, 
+                   tooltip="Period for calculation")
+source = input.source(close, "Source", group=GROUP_MAIN,
+                      tooltip="Price source for calculation")
+show_signals = input.bool(true, "Show Signals", group=GROUP_VISUAL)
+
+// Signal line colors
+color_bullish = input.color(color.green, "Bullish Color", group=GROUP_VISUAL)
+color_bearish = input.color(color.red, "Bearish Color", group=GROUP_VISUAL)
+
+// === USER-DEFINED FUNCTIONS ===
+
+//@function calculateIndicator
+//@param {series<float>} src Price source for calculation
+//@param {int} len Period length
+//@returns {float} Calculated indicator value
+calculateIndicator(series<float> src, int len) =>
+    // Example calculation - replace with actual logic
+    ta.sma(src, len)
+
+//@function getSignal
+//@param {float} current Current indicator value
+//@param {float} previous Previous indicator value
+//@returns {string} Signal type: "bullish", "bearish", or "neutral"
+getSignal(float current, float previous) =>
+    if current > previous
+        "bullish"
+    else if current < previous
+        "bearish"
+    else
+        "neutral"
+
+// === CORE CALCULATIONS ===
+
+// Main indicator calculation
+indicator_value = calculateIndicator(source, length)
+indicator_previous = calculateIndicator(source[1], length)
+
+// Signal generation
+signal = getSignal(indicator_value, indicator_previous)
+is_bullish = signal == "bullish"
+is_bearish = signal == "bearish"
+
+// === PLOTTING AND VISUALS ===
+
+// Main indicator line
+plot(indicator_value, "Indicator", 
+     color=is_bullish ? color_bullish : is_bearish ? color_bearish : color.gray,
+     linewidth=2)
+
+// Reference lines
+hline(0, "Zero Line", color=color.gray, linestyle=hline.style_dashed)
+
+// Signal markers
+plotshape(show_signals and is_bullish, "Bullish Signal", 
+          shape.triangleup, location.belowbar, color_bullish, size=size.small)
+plotshape(show_signals and is_bearish, "Bearish Signal", 
+          shape.triangledown, location.abovebar, color_bearish, size=size.small)
+
+// === ALERTS ===
+alertcondition(is_bullish, "Bullish Signal", "Bullish signal detected")
+alertcondition(is_bearish, "Bearish Signal", "Bearish signal detected")

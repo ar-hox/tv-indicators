@@ -7,3 +7,5 @@ This section provides documentation for various Pine Script trading strategies a
    :maxdepth: 2
    :caption: Strategies
    :glob:
+
+   Strategies/README

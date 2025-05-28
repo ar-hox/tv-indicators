@@ -67,7 +67,7 @@ myst_enable_extensions = [
     "amsmath",           # For AMS math environments
     "dollarmath",        # For parsing $...$ and $$...$$
     "html_image",        # For raw HTML image tags
-    "linkify",           # Convert bare URLs into links
+    # "linkify",           # Convert bare URLs into links - disabled due to dependency
     "replacements",      # Replace {{key}} with values
     "smartquotes",       # Convert quotes to smart quotes
     "tasklist",          # For GFM task lists - [ ] and - [x]

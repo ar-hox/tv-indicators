@@ -11,9 +11,16 @@ This repository is a comprehensive, open-source collection of TradingView Pine S
    :maxdepth: 2
    :caption: Getting Started
 
+   README
+
 .. toctree::
    :maxdepth: 2
    :caption: Core Guidelines
+
+   CONTRIBUTING
+   coding_guidelines
+   backtesting_and_optimization
+   llm_agent_integration
 
 .. toctree::
    :maxdepth: 2

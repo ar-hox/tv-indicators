@@ -96,6 +96,68 @@ LLMs can act as powerful assistants for various Pine Script related tasks within
 
 By leveraging the structured nature of this repository, developers can significantly enhance their productivity and explore new possibilities in Pine Script development with the assistance of LLM agents. This integration has the potential to democratize script development, allowing traders with strong conceptual ideas but perhaps less coding expertise to bring their strategies to life more effectively, guided by the repository's established standards and high-quality examples.
 
+## AI Agent Best Practices
+
+### Repository Navigation
+When working with AI agents on this repository, follow these best practices:
+
+1.  **Repository Structure Understanding:**
+    *   Always reference the repository's hierarchical structure (Indicators/, Strategies/, docs/)
+    *   Use relative paths when linking between files
+    *   Understand the purpose of each directory and its subdirectories
+
+2.  **File Relationship Mapping:**
+    *   Each `.pine` file should have a corresponding `.md` file
+    *   Template files (TEMPLATE.pine, TEMPLATE.md) provide structure examples
+    *   Directory README.md files explain organization and requirements
+
+3.  **Documentation Standards:**
+    *   Follow the established markdown structure in templates
+    *   Maintain consistency with existing documentation style
+    *   Include all required sections (Overview, Parameters, Calculation, etc.)
+
+### Prompt Engineering Guidelines
+
+1.  **Context Loading Strategy:**
+    ```
+    Load context in this order:
+    1. coding_guidelines.md (for code standards)
+    2. Relevant template files (for structure)
+    3. Related existing files (for consistency)
+    4. Specific task requirements
+    ```
+
+2.  **Structured Prompt Format:**
+    ```
+    Task: [Clear description of what needs to be done]
+    Context: [Repository files to reference]
+    Requirements: [Specific guidelines to follow]
+    Output Format: [Expected file structure and naming]
+    Validation: [How to verify the result]
+    ```
+
+3.  **Quality Assurance Prompts:**
+    *   Always ask AI to validate code against coding_guidelines.md
+    *   Request explanation of any deviations from templates
+    *   Verify all cross-references and links work correctly
+
+### Code Generation Guidelines
+
+1.  **Template-First Approach:**
+    *   Start with TEMPLATE.pine or TEMPLATE.md as base
+    *   Modify incrementally rather than creating from scratch
+    *   Maintain the established comment structure
+
+2.  **Version Control Awareness:**
+    *   Always specify Pine Script v6 requirement
+    *   Include version history in documentation
+    *   Note any breaking changes or updates
+
+3.  **Testing Integration:**
+    *   Include manual testing instructions
+    *   Specify backtesting requirements for strategies
+    *   Provide validation criteria for indicators
+
 ## Table: Example LLM Prompts for Pine Script Tasks
 
 | Task                                   | Example Prompt Snippet (Illustrative)                                                                                                                                                               |
@@ -104,3 +166,59 @@ By leveraging the structured nature of this repository, developers can significa
 | Modify MA Crossover Strategy           | "Take `Strategies/TrendFollowing/MACrossover/ma_crossover_strategy.pine`. Add an ATR-based trailing stop loss with a multiplier of 2. Update the `ma_crossover_strategy.md` to reflect this change in the 'Risk Management' section." |
 | Explain OBV Calculation Logic          | "Explain the Pine Script code for calculating On-Balance Volume (OBV) found in `Indicators/Volume/OnBalanceVolume/on_balance_volume.pine`. Focus on the core calculation logic and how volume is accumulated based on price changes." |
 | Analyze Backtest & Suggest Optimization | "Given the backtest results in `Strategies/Breakout/DonchianBreakout/donchian_breakout_strategy.md` (Net Profit: X, Max Drawdown: Y), and the code in `.pine` file, suggest two input parameters to optimize for potentially higher Sharpe Ratio. Explain your reasoning." |
+
+## Repository-Specific AI Agent Commands
+
+### Quick Reference Commands
+
+For AI agents working with this repository, here are standardized command patterns:
+
+#### File Operations
+*   `CREATE_INDICATOR [name] [category]` - Create new indicator with templates
+*   `CREATE_STRATEGY [name] [category]` - Create new strategy with templates  
+*   `UPDATE_DOCS [file]` - Update documentation following guidelines
+*   `VALIDATE_CODE [file]` - Check against coding_guidelines.md
+
+#### Analysis Operations
+*   `EXPLAIN_LOGIC [file]` - Provide detailed code explanation
+*   `REVIEW_BACKTEST [strategy]` - Analyze backtesting results
+*   `SUGGEST_OPTIMIZATION [strategy]` - Recommend parameter optimization
+*   `CHECK_COMPLIANCE [file]` - Verify adherence to guidelines
+
+#### Documentation Operations
+*   `GENERATE_DOCS [pine_file]` - Create .md from .pine file
+*   `UPDATE_README [directory]` - Refresh directory documentation
+*   `CROSS_REFERENCE [file]` - Add related links and references
+*   `VALIDATE_LINKS [file]` - Check all internal links work
+
+### Integration Workflow
+
+1.  **Setup Phase:**
+    ```
+    Load: coding_guidelines.md, CONTRIBUTING.md, relevant templates
+    Understand: Repository structure, naming conventions, file relationships
+    Prepare: Development environment context
+    ```
+
+2.  **Development Phase:**
+    ```
+    Reference: Appropriate templates and examples
+    Implement: Following established patterns and guidelines
+    Document: Using template structure and required sections
+    ```
+
+3.  **Validation Phase:**
+    ```
+    Check: Code compliance with guidelines
+    Test: Manual validation and backtesting (if applicable)
+    Review: Documentation completeness and accuracy
+    ```
+
+4.  **Integration Phase:**
+    ```
+    Place: Files in correct directory structure
+    Link: Update relevant index and README files
+    Cross-reference: Add to related documentation
+    ```
+
+This structured approach ensures that AI agents can effectively contribute to the repository while maintaining the high quality and consistency standards established for the project.

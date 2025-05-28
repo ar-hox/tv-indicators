@@ -59,6 +59,65 @@ Community contributions are highly encouraged and vital for the growth and quali
 | Coding Guidelines              | [coding_guidelines.md](coding_guidelines.md)                                 |
 | Backtesting & Optimization     | [backtesting_and_optimization.md](backtesting_and_optimization.md)         |
 | LLM Agent Integration          | [llm_agent_integration.md](llm_agent_integration.md)                         |
-| Indicators Overview            | [Indicators Directory](#indicators-directory)                                 |
-| Strategies Overview            | [Strategies Directory](#strategies-directory)                                 |
-| Live Documentation (via Docker)| `http://localhost:8000` (after running `docker-compose up --build`)
+| Indicators Overview            | [Indicators Directory](Indicators/)                                          |
+| Strategies Overview            | [Strategies Directory](Strategies/)                                          |
+| Live Documentation (via Docker)| `http://localhost:8000` (after running `docker-compose up --build`)        |
+
+## Getting Started
+
+### Local Documentation Development
+
+1. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Build Documentation:**
+   ```bash
+   ./build_docs.sh
+   ```
+   
+   Or manually:
+   ```bash
+   cd docs
+   make html
+   ```
+
+3. **Serve Documentation Locally:**
+   ```bash
+   python -m http.server 8000 --directory docs/build/html
+   ```
+
+### Using Docker
+
+1. **Build and Run with Docker Compose:**
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Access Documentation:**
+   Open `http://localhost:8000` in your browser
+
+## Repository Structure
+
+```
+tv-indicators/
+├── Indicators/                    # Pine Script indicators by category
+│   ├── Trend/                    # Trend-following indicators
+│   ├── Momentum/                 # Momentum indicators  
+│   ├── Volume/                   # Volume-based indicators
+│   ├── Volatility/               # Volatility indicators
+│   ├── TEMPLATE.pine             # Indicator code template
+│   └── TEMPLATE.md               # Indicator documentation template
+├── Strategies/                   # Trading strategies by category
+│   ├── Trend/                    # Trend-following strategies
+│   ├── MeanReversion/            # Mean reversion strategies
+│   ├── Momentum/                 # Momentum strategies
+│   ├── TEMPLATE.pine             # Strategy code template
+│   └── TEMPLATE.md               # Strategy documentation template
+├── docs/                         # Sphinx documentation
+│   ├── source/                   # Documentation source files
+│   └── build/                    # Generated HTML (gitignored)
+├── build_docs.sh                 # Documentation build script
+└── [Core documentation files]    # README, guidelines, etc.
+```
