@@ -1,5 +1,13 @@
 # Pine Script V6 Master Repository: Indicators, Strategies, and Development Framework
 
+[![Documentation](https://github.com/username/tv-indicators/workflows/Documentation%20Build%20and%20Deploy/badge.svg)](https://github.com/username/tv-indicators/actions)
+[![Code Quality](https://github.com/username/tv-indicators/workflows/Code%20Quality%20and%20Validation/badge.svg)](https://github.com/username/tv-indicators/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Pine Script](https://img.shields.io/badge/Pine%20Script-v6-blue.svg)](https://www.tradingview.com/pine-script-docs/)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+> A professional, comprehensive collection of TradingView Pine Script v6 indicators and strategies with integrated documentation, development tools, and CI/CD workflows.
+
 This repository serves as a comprehensive, high-quality, open-source collection of TradingView Pine Script v6 indicators and strategies, complete with integrated Sphinx documentation and Docker support. It is designed to promote best practices in Pine Script development, provide robust examples for traders and developers, facilitate learning, and enable advanced use cases such as LLM (Large Language Model) agent integration and systematic backtesting.
 
 The primary audience for this repository includes Pine Script developers of all skill levels, quantitative analysts, traders seeking to automate or enhance their strategies, and AI developers interested in leveraging structured financial script repositories.
@@ -19,30 +27,93 @@ Furthermore, the explicit consideration of LLM agent integration from the outset
 
 ## Repository Structure Overview
 
-*   **/ (Root Directory):** Contains primary documentation (`README.md`, `CONTRIBUTING.md`, `coding_guidelines.md`, `backtesting_and_optimization.md`, `llm_agent_integration.md`), Docker files (`Dockerfile`, `docker-compose.yml`), Sphinx configuration related files (`requirements.txt`), and license.
-*   **`/Indicators/` (Indicators Directory):** Houses Pine Script indicators, categorized by type (Trend, Momentum, Volatility, Volume). Each indicator has its own `.pine` code file and a corresponding `.md` documentation file.
-*   **`/Strategies/` (Strategies Directory):** Contains Pine Script trading strategies, categorized by type (Trend-Following, Mean-Reversion, Breakout). Each strategy includes its `.pine` code and a `.md` file with explanations and backtesting details.
-*   **`/docs/`:** Contains the Sphinx documentation source files (`.rst`, `conf.py`) and build configurations.
+This repository follows modern software engineering practices with clear separation of concerns:
+
+```
+tv-indicators/
+├── src/                          # Source code
+│   ├── indicators/              # Pine Script indicators
+│   │   ├── trend/              # Trend-based indicators (MA, EMA, MACD, etc.)
+│   │   ├── momentum/           # Momentum indicators (RSI, Stochastic, etc.)
+│   │   ├── volatility/         # Volatility indicators (Bollinger Bands, ATR, etc.)
+│   │   └── volume/             # Volume indicators (OBV, VWAP, etc.)
+│   └── strategies/             # Pine Script trading strategies
+│       ├── trend-following/    # Trend-following strategies
+│       ├── mean-reversion/     # Mean-reversion strategies
+│       └── breakout/           # Breakout strategies
+├── docs/                        # Documentation
+│   ├── source/                 # Sphinx source files
+│   ├── guides/                 # Development guides and best practices
+│   ├── api/                    # API documentation
+│   └── examples/               # Usage examples
+├── templates/                   # Template files for new scripts
+│   ├── indicators/             # Indicator templates
+│   └── strategies/             # Strategy templates
+├── tools/                       # Development tools and configuration
+│   ├── docker/                 # Docker configuration
+│   ├── scripts/                # Build and setup scripts
+│   └── requirements/           # Python dependencies
+└── .github/                     # GitHub workflows and templates
+    ├── workflows/              # CI/CD workflows
+    └── ISSUE_TEMPLATE/         # Issue templates
+```
 
 ## Quick Start
 
+### Prerequisites
+- Docker and Docker Compose (for documentation)
+- Git (for version control)
+- TradingView account (for using Pine Scripts)
+
 ### Viewing Documentation Locally
 
-1.  Clone the repository: `git clone <repository_url>`
-2.  Navigate to the repository directory: `cd <repository_name>`
-3.  Build and start the documentation server: `docker-compose up --build`
-4.  Open your browser and go to: `http://localhost:8000`
+1. **Clone the repository:**
+   ```bash
+   git clone <repository_url>
+   cd tv-indicators
+   ```
+
+2. **Start the documentation server:**
+   ```bash
+   # Using Docker Compose (recommended)
+   cd tools/docker
+   docker-compose up --build
+   
+   # Or using the provided scripts
+   cd tools/scripts
+   ./setup.sh
+   make docs-serve
+   ```
+
+3. **View documentation:**
+   Open your browser and navigate to: `http://localhost:8000`
 
 ### Using Pine Scripts in TradingView
 
-1.  Navigate to the desired indicator or strategy directory (e.g., `/Indicators/Trend/MovingAverage/`).
-2.  Open the `.pine` file (e.g., `moving_average.pine`).
-3.  Copy the entire content of the file.
-4.  Open TradingView and launch the Pine Editor (usually at the bottom of the chart).
-5.  Paste the copied code into the Pine Editor.
-6.  Click "Add to Chart" or "Save".
+1. **Browse the collection:**
+   - Navigate to `src/indicators/` or `src/strategies/`
+   - Choose the appropriate category (trend, momentum, etc.)
+   - Open the desired `.pine` file
 
-For detailed instructions on using the Pine Editor, refer to TradingView's official documentation.
+2. **Copy and use:**
+   - Copy the entire content of the Pine Script file
+   - Open TradingView and launch the Pine Editor
+   - Paste the code and click "Add to Chart"
+
+3. **Customize:**
+   - Refer to the accompanying documentation for parameter explanations
+   - Modify input parameters as needed for your use case
+
+### Contributing New Scripts
+
+1. **Use the templates:**
+   - Copy the appropriate template from `templates/indicators/` or `templates/strategies/`
+   - Follow the coding guidelines in `docs/guides/`
+
+2. **Submit your contribution:**
+   - Create a pull request with your new script
+   - Include comprehensive documentation
+   - Follow the quality checklist in the template
 
 ## License
 
