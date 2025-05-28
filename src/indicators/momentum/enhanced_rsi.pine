@@ -1,0 +1,118 @@
+// @version=6
+// @description Enhanced RSI with dynamic overbought/oversold levels and divergence detection
+// @author TV-Indicators Team
+// @category Momentum Analysis
+
+indicator("Enhanced RSI with Divergence", shorttitle="Enhanced RSI", format=format.price, precision=2, timeframe="", timeframe_gaps=true)
+
+// Input parameters
+length = input.int(14, title="RSI Length", minval=1, tooltip="Period for RSI calculation")
+src = input.source(close, title="Source", tooltip="Price source for RSI calculation")
+
+// Overbought/Oversold levels
+ob_level = input.float(70, title="Overbought Level", minval=50, maxval=100, step=0.5)
+os_level = input.float(30, title="Oversold Level", minval=0, maxval=50, step=0.5)
+
+// Dynamic levels
+use_dynamic = input.bool(false, title="Use Dynamic Levels", tooltip="Adjust OB/OS levels based on volatility")
+volatility_period = input.int(20, title="Volatility Period", minval=5, maxval=50)
+
+// Divergence detection
+show_divergence = input.bool(true, title="Show Divergence", tooltip="Highlight bullish and bearish divergences")
+div_lookback = input.int(5, title="Divergence Lookback", minval=3, maxval=20)
+
+// Visual settings
+rsi_color = input.color(color.purple, title="RSI Line Color")
+show_fill = input.bool(true, title="Show Background Fill")
+
+// Calculate RSI
+rsi = ta.rsi(src, length)
+
+// Dynamic overbought/oversold levels based on volatility
+volatility = ta.atr(volatility_period) / ta.sma(close, volatility_period) * 100
+dynamic_ob = use_dynamic ? math.min(90, ob_level + volatility * 0.5) : ob_level
+dynamic_os = use_dynamic ? math.max(10, os_level - volatility * 0.5) : os_level
+
+// Plot RSI
+plot(rsi, title="RSI", color=rsi_color, linewidth=2)
+
+// Plot reference lines
+hline(50, title="Midline", color=color.gray, linestyle=hline.style_dashed)
+plot(dynamic_ob, title="Overbought", color=color.red, linestyle=line.style_dashed)
+plot(dynamic_os, title="Oversold", color=color.green, linestyle=line.style_dashed)
+
+// Background fill
+fill_color = show_fill ? 
+     (rsi > dynamic_ob ? color.new(color.red, 85) : 
+      rsi < dynamic_os ? color.new(color.green, 85) : 
+      color.new(color.gray, 95)) : na
+bgcolor(fill_color, title="Background Fill")
+
+// Divergence detection
+bullish_div = false
+bearish_div = false
+
+if show_divergence
+    // Find peaks and troughs
+    ph = ta.pivothigh(rsi, div_lookback, div_lookback)
+    pl = ta.pivotlow(rsi, div_lookback, div_lookback)
+    
+    // Bullish divergence: Price makes lower low, RSI makes higher low
+    if not na(pl) and pl < 50
+        for i = 1 to 10
+            if not na(pl[i]) and pl[i] < 50
+                price_lower_low = low[div_lookback] < low[div_lookback + i]
+                rsi_higher_low = pl > pl[i]
+                if price_lower_low and rsi_higher_low
+                    bullish_div := true
+                break
+    
+    // Bearish divergence: Price makes higher high, RSI makes lower high
+    if not na(ph) and ph > 50
+        for i = 1 to 10
+            if not na(ph[i]) and ph[i] > 50
+                price_higher_high = high[div_lookback] > high[div_lookback + i]
+                rsi_lower_high = ph < ph[i]
+                if price_higher_high and rsi_lower_high
+                    bearish_div := true
+                break
+
+// Plot divergence signals
+plotchar(bullish_div, title="Bullish Divergence", char="🔼", location=location.bottom, color=color.green, size=size.small)
+plotchar(bearish_div, title="Bearish Divergence", char="🔽", location=location.top, color=color.red, size=size.small)
+
+// Signal generation
+rsi_oversold = ta.crossover(rsi, dynamic_os)
+rsi_overbought = ta.crossunder(rsi, dynamic_ob)
+rsi_bullish = ta.crossover(rsi, 50)
+rsi_bearish = ta.crossunder(rsi, 50)
+
+// Plot signals
+plotshape(rsi_oversold, title="RSI Oversold Signal", style=shape.labelup, location=location.bottom, color=color.green, textcolor=color.white, text="OS")
+plotshape(rsi_overbought, title="RSI Overbought Signal", style=shape.labeldown, location=location.top, color=color.red, textcolor=color.white, text="OB")
+
+// Alert conditions
+alertcondition(rsi_oversold, title="RSI Oversold", message="RSI crossed above oversold level")
+alertcondition(rsi_overbought, title="RSI Overbought", message="RSI crossed below overbought level")
+alertcondition(bullish_div, title="Bullish Divergence", message="Bullish divergence detected")
+alertcondition(bearish_div, title="Bearish Divergence", message="Bearish divergence detected")
+alertcondition(rsi_bullish, title="RSI Bullish", message="RSI crossed above 50")
+alertcondition(rsi_bearish, title="RSI Bearish", message="RSI crossed below 50")
+
+// Information table
+if barstate.islast
+    var table info_table = table.new(position.top_right, 2, 6, bgcolor=color.white, border_width=1)
+    table.cell(info_table, 0, 0, "RSI", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 1, 0, str.tostring(rsi, "#.##"), text_color=rsi_color, text_size=size.small)
+    table.cell(info_table, 0, 1, "Overbought", text_color=color.red, text_size=size.small)
+    table.cell(info_table, 1, 1, str.tostring(dynamic_ob, "#.##"), text_color=color.black, text_size=size.small)
+    table.cell(info_table, 0, 2, "Oversold", text_color=color.green, text_size=size.small)
+    table.cell(info_table, 1, 2, str.tostring(dynamic_os, "#.##"), text_color=color.black, text_size=size.small)
+    table.cell(info_table, 0, 3, "Signal", text_color=color.black, text_size=size.small)
+    signal_text = rsi > dynamic_ob ? "Overbought" : rsi < dynamic_os ? "Oversold" : rsi > 50 ? "Bullish" : "Bearish"
+    signal_color = rsi > dynamic_ob ? color.red : rsi < dynamic_os ? color.green : rsi > 50 ? color.blue : color.orange
+    table.cell(info_table, 1, 3, signal_text, text_color=signal_color, text_size=size.small)
+    table.cell(info_table, 0, 4, "Volatility", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 1, 4, str.tostring(volatility, "#.##") + "%", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 0, 5, "Mode", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 1, 5, use_dynamic ? "Dynamic" : "Static", text_color=color.black, text_size=size.small)

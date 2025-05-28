@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  docs_service:
+    # Build the Docker image from the Dockerfile in the current directory
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Name the image with version tag
+    image: pine_script_master_repo_docs:1.0.0
+    container_name: pine_docs_server
+    # Expose port 8000 on the host and map it to port 8000 in the container
+    # This allows accessing the Sphinx documentation server via http://localhost:8000
+    ports:
+      - "8000:8000"
+    # Environment variables
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Restart policy
+    restart: unless-stopped
+    # Resource limits (optional, uncomment if needed)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.5'
+    #       memory: 512M
+
+  # Optional: Development service with live reload
+  docs_dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev  # Would need multi-stage Dockerfile for this
+    image: pine_script_master_repo_docs:dev
+    container_name: pine_docs_dev
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./docs:/app/docs
+      - ./*.md:/app/
+    command: sphinx-autobuild docs/source docs/build/html --host 0.0.0.0 --port 8000
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    profiles:
+      - dev  # Only start with --profile dev

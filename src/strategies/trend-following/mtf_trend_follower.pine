@@ -1,0 +1,179 @@
+// @version=6
+// @description Multi-timeframe trend following strategy using SMA crossovers with risk management
+// @author TV-Indicators Team
+// @category Trend Following Strategy
+
+strategy("Multi-Timeframe Trend Follower", shorttitle="MTF Trend", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=10, pyramiding=0, calc_on_order_fills=false, calc_on_every_tick=false, initial_capital=10000, currency=currency.USD, commission_type=strategy.commission.percent, commission_value=0.075)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// STRATEGY INPUTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Moving Average Settings
+fast_length = input.int(21, title="Fast SMA Length", minval=1, maxval=100, group="Moving Averages")
+slow_length = input.int(50, title="Slow SMA Length", minval=1, maxval=200, group="Moving Averages")
+trend_length = input.int(200, title="Trend SMA Length", minval=1, maxval=500, group="Moving Averages")
+
+// Higher Timeframe Settings
+htf_timeframe = input.timeframe("1D", title="Higher Timeframe", group="Multi-Timeframe")
+use_htf_filter = input.bool(true, title="Use Higher Timeframe Filter", tooltip="Only trade in direction of higher timeframe trend", group="Multi-Timeframe")
+
+// Risk Management
+stop_loss_pct = input.float(2.0, title="Stop Loss %", minval=0.1, maxval=10.0, step=0.1, group="Risk Management")
+take_profit_pct = input.float(6.0, title="Take Profit %", minval=0.1, maxval=20.0, step=0.1, group="Risk Management")
+use_trailing_stop = input.bool(true, title="Use Trailing Stop", group="Risk Management")
+trail_start_pct = input.float(3.0, title="Trailing Start %", minval=0.1, maxval=10.0, step=0.1, group="Risk Management")
+trail_offset_pct = input.float(1.5, title="Trailing Offset %", minval=0.1, maxval=5.0, step=0.1, group="Risk Management")
+
+// Trade Filters
+min_volume_sma = input.int(20, title="Minimum Volume SMA", minval=1, maxval=100, group="Trade Filters")
+volume_threshold = input.float(1.2, title="Volume Threshold", minval=0.5, maxval=3.0, step=0.1, tooltip="Minimum volume vs SMA to allow trades", group="Trade Filters")
+
+// Time Filters
+use_time_filter = input.bool(false, title="Use Time Filter", group="Time Filters")
+start_hour = input.int(9, title="Start Hour", minval=0, maxval=23, group="Time Filters")
+end_hour = input.int(16, title="End Hour", minval=0, maxval=23, group="Time Filters")
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CALCULATIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Moving Averages
+fast_sma = ta.sma(close, fast_length)
+slow_sma = ta.sma(close, slow_length)
+trend_sma = ta.sma(close, trend_length)
+
+// Higher Timeframe Trend
+htf_trend_sma = request.security(syminfo.tickerid, htf_timeframe, ta.sma(close, trend_length))
+htf_bullish = close > htf_trend_sma
+htf_bearish = close < htf_trend_sma
+
+// Volume Filter
+volume_sma = ta.sma(volume, min_volume_sma)
+volume_ok = volume > volume_sma * volume_threshold
+
+// Time Filter
+time_ok = not use_time_filter or (hour >= start_hour and hour <= end_hour)
+
+// Signal Generation
+bullish_cross = ta.crossover(fast_sma, slow_sma)
+bearish_cross = ta.crossunder(fast_sma, slow_sma)
+
+// Trend Confirmation
+price_above_trend = close > trend_sma
+price_below_trend = close < trend_sma
+
+// Entry Conditions
+long_condition = bullish_cross and price_above_trend and volume_ok and time_ok and (not use_htf_filter or htf_bullish)
+short_condition = bearish_cross and price_below_trend and volume_ok and time_ok and (not use_htf_filter or htf_bearish)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// STRATEGY EXECUTION
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Entry Logic
+if long_condition and strategy.position_size == 0
+    strategy.entry("Long", strategy.long, comment="Long Entry")
+
+if short_condition and strategy.position_size == 0
+    strategy.entry("Short", strategy.short, comment="Short Entry")
+
+// Exit Logic
+if strategy.position_size > 0
+    stop_price = strategy.position_avg_price * (1 - stop_loss_pct / 100)
+    take_profit_price = strategy.position_avg_price * (1 + take_profit_pct / 100)
+    
+    strategy.exit("Long Exit", from_entry="Long", stop=stop_price, limit=take_profit_price, comment="Long Exit")
+    
+    if use_trailing_stop and (close - strategy.position_avg_price) / strategy.position_avg_price * 100 >= trail_start_pct
+        trail_stop = close * (1 - trail_offset_pct / 100)
+        strategy.exit("Long Trail", from_entry="Long", trail_price=trail_stop, comment="Long Trail")
+
+if strategy.position_size < 0
+    stop_price = strategy.position_avg_price * (1 + stop_loss_pct / 100)
+    take_profit_price = strategy.position_avg_price * (1 - take_profit_pct / 100)
+    
+    strategy.exit("Short Exit", from_entry="Short", stop=stop_price, limit=take_profit_price, comment="Short Exit")
+    
+    if use_trailing_stop and (strategy.position_avg_price - close) / strategy.position_avg_price * 100 >= trail_start_pct
+        trail_stop = close * (1 + trail_offset_pct / 100)
+        strategy.exit("Short Trail", from_entry="Short", trail_price=trail_stop, comment="Short Trail")
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PLOTTING
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Plot Moving Averages
+plot(fast_sma, title="Fast SMA", color=color.blue, linewidth=2)
+plot(slow_sma, title="Slow SMA", color=color.orange, linewidth=2)
+plot(trend_sma, title="Trend SMA", color=color.red, linewidth=3)
+
+// Plot HTF Trend
+plot(htf_trend_sma, title="HTF Trend", color=color.purple, linewidth=2, style=plot.style_circles)
+
+// Background Color for Trend
+bgcolor(price_above_trend ? color.new(color.green, 95) : color.new(color.red, 95), title="Trend Background")
+
+// Entry Signals
+plotshape(long_condition, title="Long Signal", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, text="LONG", size=size.small)
+plotshape(short_condition, title="Short Signal", style=shape.labeldown, location=location.abovebar, color=color.red, textcolor=color.white, text="SHORT", size=size.small)
+
+// Position Visualization
+plot(strategy.position_size > 0 ? strategy.position_avg_price : na, title="Long Entry Price", color=color.green, style=plot.style_linebr, linewidth=2)
+plot(strategy.position_size < 0 ? strategy.position_avg_price : na, title="Short Entry Price", color=color.red, style=plot.style_linebr, linewidth=2)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INFORMATION TABLE
+// ═════════════════════════════════════════════════════════════════════════════
+
+if barstate.islast
+    var table info_table = table.new(position.top_left, 2, 8, bgcolor=color.white, border_width=1)
+    
+    // Strategy Information
+    table.cell(info_table, 0, 0, "Strategy Status", text_color=color.black, text_size=size.small, bgcolor=color.gray)
+    table.cell(info_table, 1, 0, strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : "FLAT", 
+               text_color=strategy.position_size > 0 ? color.green : strategy.position_size < 0 ? color.red : color.gray, 
+               text_size=size.small)
+    
+    // Position Size
+    table.cell(info_table, 0, 1, "Position Size", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 1, 1, str.tostring(strategy.position_size, "#.####"), text_color=color.black, text_size=size.small)
+    
+    // Unrealized P&L
+    table.cell(info_table, 0, 2, "Unrealized P&L", text_color=color.black, text_size=size.small)
+    pnl_color = strategy.openprofit > 0 ? color.green : strategy.openprofit < 0 ? color.red : color.gray
+    table.cell(info_table, 1, 2, str.tostring(strategy.openprofit, "#.##"), text_color=pnl_color, text_size=size.small)
+    
+    // Win Rate
+    table.cell(info_table, 0, 3, "Win Rate", text_color=color.black, text_size=size.small)
+    win_rate = strategy.wintrades / (strategy.wintrades + strategy.losstrades) * 100
+    table.cell(info_table, 1, 3, str.tostring(win_rate, "#.#") + "%", text_color=color.black, text_size=size.small)
+    
+    // HTF Trend
+    table.cell(info_table, 0, 4, "HTF Trend", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 1, 4, htf_bullish ? "Bullish" : "Bearish", 
+               text_color=htf_bullish ? color.green : color.red, text_size=size.small)
+    
+    // Current Trend
+    table.cell(info_table, 0, 5, "Current Trend", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 1, 5, price_above_trend ? "Bullish" : "Bearish", 
+               text_color=price_above_trend ? color.green : color.red, text_size=size.small)
+    
+    // Volume Status
+    table.cell(info_table, 0, 6, "Volume", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 1, 6, volume_ok ? "OK" : "Low", 
+               text_color=volume_ok ? color.green : color.red, text_size=size.small)
+    
+    // Time Status
+    table.cell(info_table, 0, 7, "Time Filter", text_color=color.black, text_size=size.small)
+    table.cell(info_table, 1, 7, time_ok ? "OK" : "Filtered", 
+               text_color=time_ok ? color.green : color.red, text_size=size.small)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ALERTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+alertcondition(long_condition, title="Long Entry Alert", message="MTF Trend: Long entry signal generated")
+alertcondition(short_condition, title="Short Entry Alert", message="MTF Trend: Short entry signal generated")
+alertcondition(ta.crossunder(close, fast_sma) and strategy.position_size > 0, title="Long Exit Warning", message="MTF Trend: Consider closing long position")
+alertcondition(ta.crossover(close, fast_sma) and strategy.position_size < 0, title="Short Exit Warning", message="MTF Trend: Consider closing short position")
