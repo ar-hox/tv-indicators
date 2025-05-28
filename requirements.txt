@@ -1,8 +1,16 @@
 # Sphinx and Core Dependencies
-Sphinx>=7.2,<8.0
+# Updated for 2025 compatibility
+Sphinx>=7.4,<8.0
 sphinx-rtd-theme>=2.0.0,<3.0.0
-myst-parser>=2.0.0,<3.0.0
-sphinx-copybutton>=0.5.0,<0.6.0
+myst-parser>=3.0.0,<4.0.0
+sphinx-copybutton>=0.5.2,<0.6.0
+
+# Additional useful extensions
+sphinx-autobuild>=2024.4.16,<2025.0.0
+
+# Development and linting tools (optional)
+# black>=24.0.0,<25.0.0
+# flake8>=7.0.0,<8.0.0
 
 # Pinning versions for reproducibility.
 # Last checked compatible versions as of May 2025.

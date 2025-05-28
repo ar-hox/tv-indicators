@@ -23,7 +23,7 @@ templates/
 
 ### Strategies (`/strategies/`)
 
-- **`strategy_template.pine`**: Complete Pine Script v6 template for trading strategies  
+- **`strategy_template.pine`**: Complete Pine Script v6 template for trading strategies
 - **`strategy_template.md`**: Documentation template with backtesting sections
 
 ## How to Use Templates
@@ -39,7 +39,7 @@ templates/
 ### Pine Script Templates
 
 - ✅ Proper Pine Script v6 structure and syntax
-- ✅ Standardized commenting with `//@` annotations  
+- ✅ Standardized commenting with `//@` annotations
 - ✅ Organized sections (constants, inputs, functions, calculations, plotting)
 - ✅ Error handling and performance optimization patterns
 - ✅ Alert implementations and best practices
@@ -90,7 +90,7 @@ src/indicators/
 └── volatility/         # Bollinger Bands, ATR, etc.
 ```
 
-### Strategies  
+### Strategies
 ```
 src/strategies/
 ├── trend-following/    # Trend-following strategies

@@ -78,7 +78,7 @@ tv-indicators/
    # Using Docker Compose (recommended)
    cd tools/docker
    docker-compose up --build
-   
+
    # Or using the provided scripts
    cd tools/scripts
    ./setup.sh

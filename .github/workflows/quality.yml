@@ -9,38 +9,38 @@ on:
 jobs:
   lint-and-validate:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-        
+
     - name: Install validation tools
       run: |
         python -m pip install --upgrade pip
         pip install yamllint markdownlint-cli2 pre-commit
-        
+
     - name: Validate YAML files
       run: |
         find . -name "*.yml" -o -name "*.yaml" | xargs yamllint -d relaxed
-        
+
     - name: Validate Markdown files
       run: |
         find . -name "*.md" | xargs markdownlint-cli2 --config .markdownlint.json || true
-        
+
     - name: Check Pine Script syntax
       run: |
         # Basic syntax validation for Pine Script files
         find src/ -name "*.pine" -exec echo "Checking {}" \; -exec head -5 {} \;
-        
+
     - name: Validate file structure
       run: |
         echo "Validating repository structure..."
-        
+
         # Check required directories exist
         for dir in src docs templates tools .github; do
           if [ ! -d "$dir" ]; then
@@ -48,7 +48,7 @@ jobs:
             exit 1
           fi
         done
-        
+
         # Check required files exist
         for file in README.md LICENSE .gitignore; do
           if [ ! -f "$file" ]; then
@@ -56,54 +56,54 @@ jobs:
             exit 1
           fi
         done
-        
+
         echo "Repository structure validation passed"
-        
+
     - name: Check for template compliance
       run: |
         echo "Checking template compliance..."
-        
+
         # Check if Pine Script files follow naming conventions
         find src/ -name "*.pine" | while read file; do
           if ! grep -q "// @version=" "$file" 2>/dev/null; then
             echo "WARNING: $file missing Pine Script version declaration"
           fi
         done
-        
+
         echo "Template compliance check completed"
 
   docker-build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Build Docker image
       run: |
         cd tools/docker
         docker build -t tv-indicators-docs .
-        
+
     - name: Test Docker container
       run: |
         cd tools/docker
         docker run -d --name test-container -p 8080:8000 tv-indicators-docs
         sleep 10
-        
+
         # Check if container is running
         if ! docker ps | grep test-container; then
           echo "ERROR: Docker container failed to start"
           docker logs test-container
           exit 1
         fi
-        
+
         # Test if documentation is accessible
         if ! curl -f http://localhost:8080; then
           echo "ERROR: Documentation not accessible"
           docker logs test-container
           exit 1
         fi
-        
+
         docker stop test-container
         docker rm test-container
         echo "Docker build and test passed"

@@ -6,17 +6,17 @@ This section provides documentation for various Pine Script trading strategies a
 .. toctree::
    :maxdepth: 2
    :caption: Trend Following Strategies
-   
+
    ../../src/strategies/trend-following/mtf_trend_follower
 
 .. toctree::
    :maxdepth: 2
    :caption: Mean Reversion Strategies
-   
+
    Under development...
 
 .. toctree::
    :maxdepth: 2
    :caption: Breakout Strategies
-   
+
    Under development...

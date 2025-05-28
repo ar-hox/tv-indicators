@@ -54,7 +54,7 @@ Dynamic OS = max(10, static_os - volatility * 0.5)
 - Occurs when RSI is below 50
 - Suggests potential upward price reversal
 
-#### Bearish Divergence  
+#### Bearish Divergence
 - Price makes a higher high
 - RSI makes a lower high
 - Occurs when RSI is above 50
@@ -123,7 +123,7 @@ Dynamic OS = max(10, static_os - volatility * 0.5)
 
 The indicator provides six alert types:
 1. RSI Oversold - When RSI crosses above oversold level
-2. RSI Overbought - When RSI crosses below overbought level  
+2. RSI Overbought - When RSI crosses below overbought level
 3. Bullish Divergence - When bullish divergence is detected
 4. Bearish Divergence - When bearish divergence is detected
 5. RSI Bullish - When RSI crosses above 50

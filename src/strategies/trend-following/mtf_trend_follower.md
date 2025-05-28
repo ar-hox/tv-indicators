@@ -112,7 +112,7 @@ Activated when unrealized profit reaches the Trailing Start % threshold:
 ### Challenging Conditions
 - **Sideways/choppy markets** with frequent whipsaws
 - **Low volume environments** with sparse participation
-- **Conflicting timeframe signals** 
+- **Conflicting timeframe signals**
 - **News-driven markets** with sudden reversals
 
 ## Optimization Guidelines
@@ -121,7 +121,7 @@ Activated when unrealized profit reaches the Trailing Start % threshold:
 1. **Moving Averages**: Adjust based on market volatility and timeframe
    - More volatile markets: Use shorter periods
    - Stable markets: Use longer periods
-   
+
 2. **Risk Management**: Adapt to asset characteristics
    - High volatility assets: Wider stops and targets
    - Low volatility assets: Tighter stops and targets
@@ -190,7 +190,7 @@ Activated when unrealized profit reaches the Trailing Start % threshold:
 
 The strategy provides four alert types:
 1. **Long Entry Alert**: Triggered on long entry signals
-2. **Short Entry Alert**: Triggered on short entry signals  
+2. **Short Entry Alert**: Triggered on short entry signals
 3. **Long Exit Warning**: Price crosses below fast SMA while long
 4. **Short Exit Warning**: Price crosses above fast SMA while short
 

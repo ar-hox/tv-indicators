@@ -11,7 +11,7 @@ assignees: ''
 - [ ] Strategy
 
 ## Script Information
-**Name:** 
+**Name:**
 **Category:** [e.g., Trend, Momentum, Volatility, Volume, Trend-Following, Mean-Reversion, Breakout]
 **Pine Script Version:** v6
 
@@ -56,9 +56,9 @@ Please confirm that your submission meets our quality standards:
 ## Testing Results
 Please provide information about your testing:
 
-**Timeframes tested:** 
-**Instruments tested:** 
-**Performance notes:** 
+**Timeframes tested:**
+**Instruments tested:**
+**Performance notes:**
 
 ## Additional Information
 Any additional context, references, or notes about your submission.
