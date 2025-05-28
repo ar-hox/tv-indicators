@@ -172,6 +172,20 @@ Strategy scripts require careful consideration of execution logic and risk manag
 *   **Backtesting:** Be aware of how the broker emulator works, `calc_on_order_fills`, and `process_orders_on_close` for realistic backtesting.
 *   **Comments:** Clearly document the strategy's logic, entry/exit rules, and risk management approach.
 
+## Templates and Examples
+
+This repository provides comprehensive templates to ensure consistency and quality:
+
+*   **Indicator Template:** Use `Indicators/TEMPLATE.pine` and `Indicators/TEMPLATE.md` as starting points for new indicators.
+*   **Strategy Template:** Use `Strategies/TEMPLATE.pine` and `Strategies/TEMPLATE.md` as starting points for new strategies.
+*   **Structure Guidelines:**
+    *   Follow the exact structure and organization shown in templates
+    *   Maintain consistent commenting practices as demonstrated
+    *   Include all required sections in documentation files
+    *   Use the template input grouping and naming conventions
+
+*The templates serve multiple purposes: they accelerate development, ensure consistency across contributors, provide examples of best practices, and facilitate AI agent integration by establishing clear patterns for code generation and analysis.*
+
 By adhering to these guidelines, contributors can help ensure this repository remains a high-quality, valuable resource for the Pine Script community.
 
 ---

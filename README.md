@@ -83,6 +83,8 @@ Community contributions are highly encouraged and vital for the growth and quali
    make html
    ```
 
+   **Note:** The `build_docs.sh` script automatically synchronizes all documentation files and builds the complete documentation site.
+
 3. **Serve Documentation Locally:**
    ```bash
    python -m http.server 8000 --directory docs/build/html

@@ -63,6 +63,17 @@ Improvements to documentation are highly valued.
 *   Ensure all `.md` files are well-formatted and render correctly in Sphinx.
 *   Follow the structure and style of existing documentation.
 *   For new scripts, the `.md` file should explain the indicator/strategy's purpose, parameters, calculation logic (conceptually), trading signals (if any), and provide usage examples.
+*   Use the provided templates (`TEMPLATE.md`) as starting points for new documentation.
+*   Run `./build_docs.sh` to verify documentation builds correctly before submitting.
+
+### AI Agent Guidelines for Documentation
+
+When using AI agents to contribute documentation:
+
+1.  **Template Adherence:** Always start with the appropriate TEMPLATE.md file
+2.  **Consistency:** Maintain the established structure and style across all documentation
+3.  **Cross-referencing:** Ensure all internal links and references are valid
+4.  **Build Validation:** Test documentation builds before submission using `./build_docs.sh`
 
 ## Pull Request (PR) Process
 

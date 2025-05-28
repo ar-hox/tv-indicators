@@ -9,7 +9,8 @@ COPY requirements.txt .
 
 # Install any needed packages specified in requirements.txt
 # Using --no-cache-dir to reduce image size
-RUN pip install --no-cache-dir -r requirements.txt
+# Use trusted hosts for sandboxed environments with SSL issues
+RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
 
 # Copy the rest of the repository's content into the container at /app
 COPY . .
@@ -21,7 +22,7 @@ RUN chmod +x build_docs.sh && ./build_docs.sh
 EXPOSE 8000
 
 # Define environment variable
-ENV NAME PineDocs
+ENV NAME=PineDocs
 
 # Run a simple Python HTTP server to serve the documentation
 # The server will serve files from the docs/build/html directory.
