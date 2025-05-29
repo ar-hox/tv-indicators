@@ -1,0 +1,335 @@
+// @version=6
+// @description Adaptive Volatility Compression Breakout with Multi-Stage Confirmation
+// @author TV-Indicators Team
+// @category Breakout Strategy
+
+strategy("Adaptive Volatility Compression Breakout", shorttitle="AVCB-MSC", overlay=true, 
+         initial_capital=10000, default_qty_type=strategy.risk, default_qty_value=1, 
+         commission_type=strategy.commission.percent, commission_value=0.075, slippage=2, 
+         pyramiding=0, calc_on_every_tick=false)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// STRATEGY INPUTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// A. Volatility Compression (Squeeze Detection)
+bbPeriodInput = input.int(20, title="Bollinger Bands Period", minval=5, maxval=100, group="Volatility Compression")
+bbStdDevInput = input.float(2.0, title="Bollinger Bands StdDev", minval=0.5, maxval=5.0, step=0.1, group="Volatility Compression")
+kcEmaPeriodInput = input.int(20, title="Keltner Channel EMA Period", minval=5, maxval=100, group="Volatility Compression")
+kcAtrPeriodInput = input.int(10, title="Keltner Channel ATR Period", minval=5, maxval=50, group="Volatility Compression")
+kcAtrMultInput = input.float(1.5, title="Keltner Channel ATR Multiplier", minval=0.5, maxval=5.0, step=0.1, group="Volatility Compression")
+useSqueezeProInput = input.bool(false, title="Use Squeeze Pro Logic (BB %B < 0.2 or > 0.8 for X bars)", group="Volatility Compression")
+squeezeProLookbackInput = input.int(5, title="Squeeze Pro Lookback", minval=1, maxval=20, group="Volatility Compression")
+
+// B. Breakout & Volume Confirmation
+breakoutLookbackInput = input.int(1, title="Breakout Confirmation Lookback (Bars)", minval=0, maxval=10, group="Breakout & Volume")
+volumeMinFactorInput = input.float(1.5, title="Min Volume Factor (x Avg Volume)", minval=1.0, maxval=5.0, step=0.1, group="Breakout & Volume")
+volumeAvgPeriodInput = input.int(20, title="Volume Average Period", minval=5, maxval=100, group="Breakout & Volume")
+useVolumeConfirmationInput = input.bool(true, title="Enable Volume Confirmation", group="Breakout & Volume")
+
+// C. Higher-Timeframe (HTF) Trend Filter
+htfTimeframeInput = input.timeframe("4H", title="Higher Timeframe for Trend", group="HTF Trend Filter")
+htfMaTypeInput = input.string("EMA", title="HTF MA Type", options=["SMA", "EMA", "WMA", "HMA"], group="HTF Trend Filter")
+htfMaLengthInput = input.int(50, title="HTF MA Length", minval=5, maxval=200, group="HTF Trend Filter")
+useHtfTrendFilterInput = input.bool(true, title="Enable HTF Trend Filter", group="HTF Trend Filter")
+
+// D. Entry Timeframe Momentum Filter
+macdFastMaInput = input.int(12, title="MACD Fast MA", minval=1, maxval=50, group="Momentum Filter")
+macdSlowMaInput = input.int(26, title="MACD Slow MA", minval=1, maxval=100, group="Momentum Filter")
+macdSignalMaInput = input.int(9, title="MACD Signal MA", minval=1, maxval=50, group="Momentum Filter")
+useMomentumFilterInput = input.bool(true, title="Enable Momentum Filter (MACD)", group="Momentum Filter")
+
+// E. Market Regime Filter (ADX)
+adxPeriodInput = input.int(14, title="ADX Period", minval=5, maxval=50, group="Market Regime Filter")
+adxThresholdInput = input.float(20.0, title="ADX Min Strength for Breakout", minval=10.0, maxval=50.0, step=1.0, group="Market Regime Filter")
+useMarketRegimeFilterInput = input.bool(true, title="Enable Market Regime Filter (ADX)", group="Market Regime Filter")
+
+// F. Risk Management
+atrPeriodRmInput = input.int(14, title="ATR Period for Risk Management", minval=5, maxval=50, group="Risk Management")
+stopLossAtrMultInput = input.float(2.0, title="Stop Loss ATR Multiplier", minval=0.5, maxval=10.0, step=0.1, group="Risk Management")
+takeProfit1AtrMultInput = input.float(1.5, title="Take Profit 1 ATR Multiplier", minval=0.5, maxval=10.0, step=0.1, group="Risk Management")
+takeProfit2AtrMultInput = input.float(3.0, title="Take Profit 2 ATR Multiplier", minval=0.5, maxval=20.0, step=0.1, group="Risk Management")
+useTrailingStopInput = input.bool(true, title="Use Trailing Stop After TP1", group="Risk Management")
+trailingStopAtrMultInput = input.float(1.5, title="Trailing Stop ATR Multiplier", minval=0.5, maxval=5.0, step=0.1, group="Risk Management")
+
+// ═════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Get Higher Timeframe Moving Average
+f_getHtfMA(maType, source, length) =>
+    switch maType
+        "SMA" => request.security(syminfo.tickerid, htfTimeframeInput, ta.sma(source, length))
+        "EMA" => request.security(syminfo.tickerid, htfTimeframeInput, ta.ema(source, length))
+        "WMA" => request.security(syminfo.tickerid, htfTimeframeInput, ta.wma(source, length))
+        "HMA" => request.security(syminfo.tickerid, htfTimeframeInput, ta.hma(source, length))
+        => request.security(syminfo.tickerid, htfTimeframeInput, ta.ema(source, length))
+
+// Calculate MACD components
+f_calculateMacd(source, fastLength, slowLength, signalLength) =>
+    fastMa = ta.ema(source, fastLength)
+    slowMa = ta.ema(source, slowLength)
+    macdLine = fastMa - slowMa
+    signalLine = ta.ema(macdLine, signalLength)
+    histogram = macdLine - signalLine
+    [macdLine, signalLine, histogram]
+
+// Calculate ADX components
+f_calculateAdx(high, low, close, length) =>
+    up = ta.change(high)
+    down = -ta.change(low)
+    trueRange = ta.tr
+    plusDM = na(up) ? na : (up > down and up > 0 ? up : 0)
+    minusDM = na(down) ? na : (down > up and down > 0 ? down : 0)
+    
+    plusDI = 100 * ta.ema(plusDM, length) / ta.ema(trueRange, length)
+    minusDI = 100 * ta.ema(minusDM, length) / ta.ema(trueRange, length)
+    
+    dx = math.abs(plusDI - minusDI) / (plusDI + minusDI) * 100
+    adx = ta.ema(dx, length)
+    
+    [adx, plusDI, minusDI]
+
+// Check if in squeeze
+f_isInSqueeze(bbUpper, bbLower, kcUpper, kcLower) =>
+    bbUpper <= kcUpper and bbLower >= kcLower
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CALCULATIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// A. Volatility Compression
+bbBasis = ta.sma(close, bbPeriodInput)
+bbDev = bbStdDevInput * ta.stdev(close, bbPeriodInput)
+bbUpper = bbBasis + bbDev
+bbLower = bbBasis - bbDev
+
+kcBasis = ta.ema(close, kcEmaPeriodInput)
+kcRange = ta.atr(kcAtrPeriodInput) * kcAtrMultInput
+kcUpper = kcBasis + kcRange
+kcLower = kcBasis - kcRange
+
+// Standard squeeze detection
+isSqueezed = f_isInSqueeze(bbUpper, bbLower, kcUpper, kcLower)
+
+// Squeeze Pro logic (optional)
+bbPercentB = (close - bbLower) / (bbUpper - bbLower)
+isSqueezeProActive = false
+if useSqueezeProInput
+    tightRangeCount = 0
+    for i = 0 to squeezeProLookbackInput - 1
+        if bbPercentB[i] < 0.2 or bbPercentB[i] > 0.8
+            tightRangeCount += 1
+    isSqueezeProActive := tightRangeCount >= squeezeProLookbackInput
+
+// B. Volume
+avgVolume = ta.sma(volume, volumeAvgPeriodInput)
+volumeConfirmed = volume > avgVolume * volumeMinFactorInput
+
+// C. HTF Trend
+htfMa = f_getHtfMA(htfMaTypeInput, close, htfMaLengthInput)
+htfTrendIsUp = close > htfMa
+htfTrendIsDown = close < htfMa
+
+// D. Momentum (MACD)
+[macdLine, macdSignal, macdHistogram] = f_calculateMacd(close, macdFastMaInput, macdSlowMaInput, macdSignalMaInput)
+momentumIsBullish = macdHistogram > 0 and macdHistogram > macdHistogram[1]
+momentumIsBearish = macdHistogram < 0 and macdHistogram < macdHistogram[1]
+
+// E. Market Regime (ADX)
+[adxValue, plusDI, minusDI] = f_calculateAdx(high, low, close, adxPeriodInput)
+marketIsTrending = adxValue > adxThresholdInput
+
+// F. ATR for Risk Management
+atrValueRm = ta.atr(atrPeriodRmInput)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ENTRY CONDITIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Base Breakout Conditions
+actualSqueezeCondition = useSqueezeProInput ? isSqueezeProActive[breakoutLookbackInput] : isSqueezed[breakoutLookbackInput]
+longBreakoutSignal = actualSqueezeCondition and ta.crossover(close, kcUpper[breakoutLookbackInput])
+shortBreakoutSignal = actualSqueezeCondition and ta.crossunder(close, kcLower[breakoutLookbackInput])
+
+// Filtered Entry Conditions
+allowLongEntry = longBreakoutSignal and 
+                 (not useHtfTrendFilterInput or htfTrendIsUp) and
+                 (not useMomentumFilterInput or momentumIsBullish) and
+                 (not useMarketRegimeFilterInput or marketIsTrending) and
+                 (not useVolumeConfirmationInput or volumeConfirmed) and
+                 strategy.position_size == 0
+
+allowShortEntry = shortBreakoutSignal and 
+                  (not useHtfTrendFilterInput or htfTrendIsDown) and
+                  (not useMomentumFilterInput or momentumIsBearish) and
+                  (not useMarketRegimeFilterInput or marketIsTrending) and
+                  (not useVolumeConfirmationInput or volumeConfirmed) and
+                  strategy.position_size == 0
+
+// ═════════════════════════════════════════════════════════════════════════════
+// STRATEGY EXECUTION
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Entry Orders
+if allowLongEntry
+    strategy.entry("Long", strategy.long, comment="Long Breakout")
+
+if allowShortEntry
+    strategy.entry("Short", strategy.short, comment="Short Breakout")
+
+// Exit Orders with ATR-based levels
+if strategy.position_size != 0
+    if strategy.position_size > 0  // Long position
+        stopLossPrice = strategy.position_avg_price - (atrValueRm * stopLossAtrMultInput)
+        takeProfit1Price = strategy.position_avg_price + (atrValueRm * takeProfit1AtrMultInput)
+        takeProfit2Price = strategy.position_avg_price + (atrValueRm * takeProfit2AtrMultInput)
+        
+        strategy.exit("Long Exit", from_entry="Long", stop=stopLossPrice, limit=takeProfit1Price, comment="Long TP1")
+    
+    if strategy.position_size < 0  // Short position
+        stopLossPrice = strategy.position_avg_price + (atrValueRm * stopLossAtrMultInput)
+        takeProfit1Price = strategy.position_avg_price - (atrValueRm * takeProfit1AtrMultInput)
+        takeProfit2Price = strategy.position_avg_price - (atrValueRm * takeProfit2AtrMultInput)
+        
+        strategy.exit("Short Exit", from_entry="Short", stop=stopLossPrice, limit=takeProfit1Price, comment="Short TP1")
+
+// Trailing Stop Logic (simplified implementation)
+var float trailStop = na
+if useTrailingStopInput and strategy.position_size != 0
+    if strategy.position_size > 0 and close >= strategy.position_avg_price + atrValueRm * takeProfit1AtrMultInput
+        newTrailStop = close - atrValueRm * trailingStopAtrMultInput
+        trailStop := na(trailStop) ? newTrailStop : math.max(trailStop, newTrailStop)
+        strategy.exit("Long Trail", from_entry="Long", stop=trailStop, comment="Long Trail")
+    
+    if strategy.position_size < 0 and close <= strategy.position_avg_price - atrValueRm * takeProfit1AtrMultInput
+        newTrailStop = close + atrValueRm * trailingStopAtrMultInput
+        trailStop := na(trailStop) ? newTrailStop : math.min(trailStop, newTrailStop)
+        strategy.exit("Short Trail", from_entry="Short", stop=trailStop, comment="Short Trail")
+
+// Reset trail stop when no position
+if strategy.position_size == 0
+    trailStop := na
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PLOTTING
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Plot Bollinger Bands
+plot(bbUpper, title="BB Upper", color=color.blue, linewidth=1, style=plot.style_line)
+plot(bbBasis, title="BB Basis", color=color.gray, linewidth=1, style=plot.style_line)
+plot(bbLower, title="BB Lower", color=color.blue, linewidth=1, style=plot.style_line)
+
+// Plot Keltner Channels
+plot(kcUpper, title="KC Upper", color=color.red, linewidth=2, style=plot.style_line)
+plot(kcBasis, title="KC Basis", color=color.orange, linewidth=1, style=plot.style_line)
+plot(kcLower, title="KC Lower", color=color.red, linewidth=2, style=plot.style_line)
+
+// Plot HTF MA
+plot(htfMa, title="HTF MA", color=color.purple, linewidth=2, style=plot.style_circles)
+
+// Background color for squeeze
+squeezeCondition = useSqueezeProInput ? isSqueezeProActive : isSqueezed
+bgcolor(squeezeCondition ? color.new(color.yellow, 85) : na, title="Squeeze Background")
+
+// Entry Signals
+plotshape(allowLongEntry, title="Long Entry", style=shape.labelup, location=location.belowbar, 
+          color=color.green, textcolor=color.white, text="LONG", size=size.small)
+plotshape(allowShortEntry, title="Short Entry", style=shape.labeldown, location=location.abovebar, 
+          color=color.red, textcolor=color.white, text="SHORT", size=size.small)
+
+// Position visualization
+plot(strategy.position_size > 0 ? strategy.position_avg_price : na, title="Long Entry Price", 
+     color=color.green, style=plot.style_linebr, linewidth=2)
+plot(strategy.position_size < 0 ? strategy.position_avg_price : na, title="Short Entry Price", 
+     color=color.red, style=plot.style_linebr, linewidth=2)
+
+// Stop Loss and Take Profit levels
+if strategy.position_size > 0
+    plot(strategy.position_avg_price - atrValueRm * stopLossAtrMultInput, title="Long SL", 
+         color=color.red, style=plot.style_linebr, linewidth=1)
+    plot(strategy.position_avg_price + atrValueRm * takeProfit1AtrMultInput, title="Long TP1", 
+         color=color.green, style=plot.style_linebr, linewidth=1)
+
+if strategy.position_size < 0
+    plot(strategy.position_avg_price + atrValueRm * stopLossAtrMultInput, title="Short SL", 
+         color=color.red, style=plot.style_linebr, linewidth=1)
+    plot(strategy.position_avg_price - atrValueRm * takeProfit1AtrMultInput, title="Short TP1", 
+         color=color.green, style=plot.style_linebr, linewidth=1)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// NOTE: MACD and ADX indicators are used internally for signal generation
+// Their values are displayed in the information table rather than plotted
+// to maintain clean chart visualization for the overlay strategy
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INFORMATION TABLE
+// ═════════════════════════════════════════════════════════════════════════════
+
+if barstate.islast
+    var table infoTable = table.new(position.top_right, 2, 10, bgcolor=color.white, border_width=1)
+    
+    // Strategy Status
+    table.cell(infoTable, 0, 0, "Position", text_color=color.black, text_size=size.small, bgcolor=color.gray)
+    positionText = strategy.position_size > 0 ? "LONG" : strategy.position_size < 0 ? "SHORT" : "FLAT"
+    positionColor = strategy.position_size > 0 ? color.green : strategy.position_size < 0 ? color.red : color.gray
+    table.cell(infoTable, 1, 0, positionText, text_color=positionColor, text_size=size.small)
+    
+    // Squeeze Status
+    table.cell(infoTable, 0, 1, "Squeeze", text_color=color.black, text_size=size.small)
+    squeezeText = squeezeCondition ? "ACTIVE" : "INACTIVE"
+    squeezeColor = squeezeCondition ? color.yellow : color.gray
+    table.cell(infoTable, 1, 1, squeezeText, text_color=squeezeColor, text_size=size.small)
+    
+    // HTF Trend
+    table.cell(infoTable, 0, 2, "HTF Trend", text_color=color.black, text_size=size.small)
+    htfText = htfTrendIsUp ? "BULLISH" : "BEARISH"
+    htfColor = htfTrendIsUp ? color.green : color.red
+    table.cell(infoTable, 1, 2, htfText, text_color=htfColor, text_size=size.small)
+    
+    // Momentum
+    table.cell(infoTable, 0, 3, "Momentum", text_color=color.black, text_size=size.small)
+    momentumText = momentumIsBullish ? "BULLISH" : momentumIsBearish ? "BEARISH" : "NEUTRAL"
+    momentumColor = momentumIsBullish ? color.green : momentumIsBearish ? color.red : color.gray
+    table.cell(infoTable, 1, 3, momentumText, text_color=momentumColor, text_size=size.small)
+    
+    // Market Regime
+    table.cell(infoTable, 0, 4, "ADX", text_color=color.black, text_size=size.small)
+    adxText = marketIsTrending ? "TRENDING" : "RANGING"
+    adxColor = marketIsTrending ? color.green : color.orange
+    table.cell(infoTable, 1, 4, adxText, text_color=adxColor, text_size=size.small)
+    
+    // Volume
+    table.cell(infoTable, 0, 5, "Volume", text_color=color.black, text_size=size.small)
+    volumeText = volumeConfirmed ? "HIGH" : "LOW"
+    volumeColor = volumeConfirmed ? color.green : color.red
+    table.cell(infoTable, 1, 5, volumeText, text_color=volumeColor, text_size=size.small)
+    
+    // P&L
+    table.cell(infoTable, 0, 6, "P&L", text_color=color.black, text_size=size.small)
+    pnlColor = strategy.openprofit > 0 ? color.green : strategy.openprofit < 0 ? color.red : color.gray
+    table.cell(infoTable, 1, 6, str.tostring(strategy.openprofit, "#.##"), text_color=pnlColor, text_size=size.small)
+    
+    // ATR Value
+    table.cell(infoTable, 0, 7, "ATR", text_color=color.black, text_size=size.small)
+    table.cell(infoTable, 1, 7, str.tostring(atrValueRm, "#.####"), text_color=color.black, text_size=size.small)
+    
+    // Win Rate
+    table.cell(infoTable, 0, 8, "Win Rate", text_color=color.black, text_size=size.small)
+    winRate = strategy.wintrades / (strategy.wintrades + strategy.losstrades) * 100
+    table.cell(infoTable, 1, 8, str.tostring(winRate, "#.#") + "%", text_color=color.black, text_size=size.small)
+    
+    // Total Trades
+    table.cell(infoTable, 0, 9, "Trades", text_color=color.black, text_size=size.small)
+    totalTrades = strategy.wintrades + strategy.losstrades
+    table.cell(infoTable, 1, 9, str.tostring(totalTrades), text_color=color.black, text_size=size.small)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ALERTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+alertcondition(allowLongEntry, title="Long Entry Alert", message="AVCB: Long breakout signal - all filters confirmed")
+alertcondition(allowShortEntry, title="Short Entry Alert", message="AVCB: Short breakout signal - all filters confirmed")
+alertcondition(squeezeCondition and not squeezeCondition[1], title="Squeeze Forming", message="AVCB: Volatility compression detected - potential breakout setup")
+alertcondition(not squeezeCondition and squeezeCondition[1], title="Squeeze Released", message="AVCB: Volatility compression released - watch for breakout")

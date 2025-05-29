@@ -19,4 +19,4 @@ This section provides documentation for various Pine Script trading strategies a
    :maxdepth: 2
    :caption: Breakout Strategies
 
-   Under development...
+   ../../src/strategies/breakout/adaptive_volatility_compression_breakout
