@@ -1,0 +1,86 @@
+//@version=6
+
+//@description [Brief description of what this indicator does]
+indicator(
+    title="[Indicator Name]",
+    shorttitle="[Short Name]",
+    overlay=false,  // Change to true if plotting on price chart
+    timeframe="",
+    timeframe_gaps=true,
+    max_bars_back=5000
+)
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+// Define any constants here using SNAKE_CASE_ALL_CAPS
+const string INDICATOR_NAME = "[Indicator Name]"
+const color DEFAULT_COLOR = color.blue
+
+// ============================================================================
+// INPUTS
+// ============================================================================
+
+// Group inputs logically
+lengthInput = input.int(
+    defval=14,
+    title="Length",
+    minval=1,
+    maxval=500,
+    group="Basic Settings"
+)
+
+sourceInput = input.source(
+    defval=close,
+    title="Source",
+    group="Basic Settings"
+)
+
+// Add more inputs as needed...
+
+// ============================================================================
+// USER-DEFINED FUNCTIONS
+// ============================================================================
+
+//@function calculateExampleValue
+//@param src {series float} The input source series
+//@param length {simple int} The calculation period
+//@returns {float} The calculated value
+calculateExampleValue(src, length) =>
+    // Implement your calculation logic here
+    math.sum(src, length) / length
+
+// ============================================================================
+// CORE CALCULATIONS
+// ============================================================================
+
+// Main indicator calculations
+exampleValue = calculateExampleValue(sourceInput, lengthInput)
+
+// ============================================================================
+// PLOTTING AND VISUALS
+// ============================================================================
+
+// Plot the main indicator line
+plot(
+    series=exampleValue,
+    title="Example Value",
+    color=DEFAULT_COLOR,
+    linewidth=2
+)
+
+// Add horizontal reference lines if needed
+hline(0, "Zero Line", color=color.gray, linestyle=hline.style_dashed)
+
+// ============================================================================
+// ALERTS
+// ============================================================================
+
+// Define alert conditions
+alertCondition = exampleValue > 0
+alertcondition(alertCondition, title="Example Alert", message="Condition met")
+
+// Or use dynamic alerts
+if alertCondition
+    alert("Example alert message", alert.freq_once_per_bar)
