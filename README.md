@@ -1,10 +1,10 @@
 # Pine Script V6 Master Repository: Indicators, Strategies, and Development Framework
 
-[![Documentation](https://github.com/username/tv-indicators/workflows/Documentation%20Build%20and%20Deploy/badge.svg)](https://github.com/username/tv-indicators/actions)
-[![Code Quality](https://github.com/username/tv-indicators/workflows/Code%20Quality%20and%20Validation/badge.svg)](https://github.com/username/tv-indicators/actions)
+[![Documentation](https://github.com/[owner]/tv-indicators/workflows/Documentation%20Build%20and%20Deploy/badge.svg)](https://github.com/[owner]/tv-indicators/actions)
+[![Code Quality](https://github.com/[owner]/tv-indicators/workflows/Code%20Quality%20and%20Validation/badge.svg)](https://github.com/[owner]/tv-indicators/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Pine Script](https://img.shields.io/badge/Pine%20Script-v6-blue.svg)](https://www.tradingview.com/pine-script-docs/)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](docs/guides/CONTRIBUTING.md)
 
 > A professional, comprehensive collection of TradingView Pine Script v6 indicators and strategies with integrated documentation, development tools, and CI/CD workflows.
 
@@ -121,15 +121,18 @@ This repository and its contents are licensed under the MIT License. See the [LI
 
 ## Contributing
 
-Community contributions are highly encouraged and vital for the growth and quality of this repository. Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+Community contributions are highly encouraged and vital for the growth and quality of this repository. Please refer to [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md) for detailed guidelines.
 
 ## Quick Links
 
 | Section                        | Link                                                                          |
 | ------------------------------ | ----------------------------------------------------------------------------- |
-| Coding Guidelines              | [coding_guidelines.md](coding_guidelines.md)                                 |
-| Backtesting & Optimization     | [backtesting_and_optimization.md](backtesting_and_optimization.md)         |
-| LLM Agent Integration          | [llm_agent_integration.md](llm_agent_integration.md)                         |
-| Indicators Overview            | [Indicators Directory](#indicators-directory)                                 |
-| Strategies Overview            | [Strategies Directory](#strategies-directory)                                 |
-| Live Documentation (via Docker)| `http://localhost:8000` (after running `docker-compose up --build`)
+| Contributing Guidelines        | [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md)                   |
+| Coding Guidelines              | [docs/guides/coding_guidelines.md](docs/guides/coding_guidelines.md)         |
+| Backtesting & Optimization     | [docs/guides/backtesting_and_optimization.md](docs/guides/backtesting_and_optimization.md) |
+| LLM Agent Integration          | [docs/guides/llm_agent_integration.md](docs/guides/llm_agent_integration.md) |
+| Indicators Collection          | [src/indicators/](src/indicators/)                                           |
+| Strategies Collection          | [src/strategies/](src/strategies/)                                           |
+| Templates                      | [templates/](templates/)                                                     |
+| Development Tools              | [tools/](tools/)                                                             |
+| Live Documentation (via Docker)| `http://localhost:8000` (after running `cd tools/docker && docker-compose up`) |
