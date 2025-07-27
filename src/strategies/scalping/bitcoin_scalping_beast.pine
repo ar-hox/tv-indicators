@@ -1,0 +1,354 @@
+//@version=6
+strategy("Quantum Market Dynamics", shorttitle="QMD", overlay=true,
+         default_qty_type=strategy.percent_of_equity, default_qty_value=100,
+         commission_type=strategy.commission.percent, commission_value=0.05,
+         slippage=2, calc_on_every_tick=true, max_boxes_count=500, max_lines_count=500)
+
+// ══════════════════════════════════════════════════════════════════════════════
+// QUANTUM NEURAL NETWORK CONFIGURATION
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Adaptive Intelligence Settings
+neuralDepth = input.int(8, title="🧠 Neural Network Depth", minval=3, maxval=15, group="🔬 Quantum Intelligence")
+adaptationRate = input.float(0.03, title="🔄 Learning Rate", minval=0.01, maxval=0.1, step=0.01, group="🔬 Quantum Intelligence")
+memoryHorizon = input.int(144, title="📚 Memory Horizon", minval=50, maxval=500, group="🔬 Quantum Intelligence")
+
+// Market Microstructure Analysis
+orderFlowSensitivity = input.float(2.3, title="🌊 Order Flow Sensitivity", minval=1.0, maxval=5.0, step=0.1, group="📊 Microstructure")
+liquidityThreshold = input.float(1.8, title="💧 Liquidity Threshold", minval=1.0, maxval=3.0, step=0.1, group="📊 Microstructure")
+smartMoneyDetection = input.bool(true, title="💰 Smart Money Detection", group="📊 Microstructure")
+
+// Risk Quantum Field
+riskQuantum = input.float(1.2, title="⚛️ Risk Quantum", minval=0.5, maxval=3.0, step=0.1, group="🛡️ Risk Field")
+
+energyField = input.float(2.1, title="⚡ Energy Field Intensity", minval=1.0, maxval=5.0, step=0.1, group="🛡️ Risk Field")
+probabilityMatrix = input.bool(true, title="🎲 Probability Matrix", group="🛡️ Risk Field")
+
+// Aesthetic Configuration
+enableAurora = input.bool(true, title="🌌 Aurora Visualization", group="✨ Aesthetics")
+enableHeatmap = input.bool(true, title="🔥 Heatmap Overlay", group="✨ Aesthetics")
+enableQuantumLines = input.bool(true, title="〰️ Quantum Flow Lines", group="✨ Aesthetics")
+neonIntensity = input.float(0.8, title="💫 Neon Intensity", minval=0.1, maxval=1.0, step=0.1, group="✨ Aesthetics")
+
+// ══════════════════════════════════════════════════════════════════════════════
+// QUANTUM NEURAL COMPUTATION LAYER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Adaptive Weight Matrix (simplified neural network simulation)
+var array<float> neuralWeights = array.new<float>()
+var array<float> adaptiveMemory = array.new<float>()
+
+if barstate.isfirst
+    for i = 0 to neuralDepth - 1
+        array.push(neuralWeights, math.random(0.1, 0.9))
+    for i = 0 to memoryHorizon - 1
+        array.push(adaptiveMemory, 0.0)
+
+// Feature Engineering with Quantum Signatures
+priceVelocity = ta.change(close) / ta.atr(14)
+volumeAcceleration = ta.change(ta.change(volume))
+momentumGradient = ta.roc(ta.rsi(close, 14), 5)
+volatilitySignature = ta.stdev(ta.change(close), 20) / ta.sma(ta.atr(14), 20)
+
+// Multi-dimensional feature vector
+featureVector = (priceVelocity * 0.25) + (volumeAcceleration / 1000000 * 0.25) + (momentumGradient * 0.25) + (volatilitySignature * 0.25)
+
+// Update adaptive memory
+if not na(featureVector)
+    array.unshift(adaptiveMemory, featureVector)
+    if array.size(adaptiveMemory) > memoryHorizon
+        array.pop(adaptiveMemory)
+
+// Neural computation (simplified feedforward)
+neuralSignal = 0.0
+if array.size(adaptiveMemory) >= neuralDepth
+    for i = 0 to neuralDepth - 1
+        weight = array.get(neuralWeights, i)
+        memoryValue = array.get(adaptiveMemory, i)
+        neuralSignal := neuralSignal + (weight * memoryValue)
+
+    // Activation function (tanh)
+    neuralSignal := math.tanh(neuralSignal)
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MARKET MICROSTRUCTURE INTELLIGENCE
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Order Flow Imbalance Detection
+buyPressure = volume * math.max(close - open, 0) / (high - low + 0.000001)
+sellPressure = volume * math.max(open - close, 0) / (high - low + 0.000001)
+orderFlowImbalance = ta.ema(buyPressure - sellPressure, 21)
+
+// Smart Money Footprint Analysis
+smartMoneyProxy = volume * math.abs(close - (high + low) / 2) / (high - low + 0.000001)
+institutionalFlow = ta.ema(smartMoneyProxy, 34)
+retailFlow = ta.ema(volume, 34) - institutionalFlow
+
+// Liquidity Dynamics
+liquidityShock = math.abs(ta.change(volume)) / ta.sma(volume, 50)
+liquidityStress = liquidityShock > liquidityThreshold
+
+// Market Regime Detection using Hurst Exponent approximation
+returns = math.log(close / close[1])
+var array<float> returnSeries = array.new<float>()
+array.unshift(returnSeries, returns)
+if array.size(returnSeries) > 50
+    array.pop(returnSeries)
+
+hurstProxy = 0.0
+if array.size(returnSeries) >= 20
+    // Simplified Hurst calculation
+    variance1 = ta.variance(returns, 10)
+    variance2 = ta.variance(returns, 20)
+    hurstProxy := math.log(variance2 / variance1) / math.log(2)
+
+marketRegime = hurstProxy > 0.5 ? "Trending" : hurstProxy < 0.4 ? "Mean-Reverting" : "Random"
+
+// ══════════════════════════════════════════════════════════════════════════════
+// QUANTUM PROBABILITY FIELD
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Probability wave function
+psi_bull = math.exp(-math.pow(neuralSignal - 0.5, 2) / (2 * math.pow(0.3, 2)))
+psi_bear = math.exp(-math.pow(neuralSignal + 0.5, 2) / (2 * math.pow(0.3, 2)))
+
+// Quantum interference
+interference = math.cos(neuralSignal * math.pi)
+quantumProbability = (psi_bull - psi_bear) * interference
+
+// Energy field calculation
+kineticEnergy = math.pow(ta.change(close), 2) / (2 * math.pow(ta.atr(14), 2))
+potentialEnergy = math.abs(close - ta.sma(close, 50)) / ta.atr(14)
+totalEnergy = kineticEnergy + potentialEnergy
+
+energyMomentum = totalEnergy > energyField
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SOPHISTICATED SIGNAL GENERATION
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Quantum entanglement between timeframes
+htf_signal = request.security(syminfo.tickerid, "15m", neuralSignal, lookahead=barmerge.lookahead_off)
+temporal_coherence = math.abs(neuralSignal - htf_signal) < 0.3
+
+// Advanced pattern recognition
+fractal_bull = ta.pivotlow(low, 3, 3) and low[3] < low[6] and low[3] < low[9]
+fractal_bear = ta.pivothigh(high, 3, 3) and high[3] > high[6] and high[3] > high[9]
+
+// Confluence scoring system
+bullConfluence = 0
+bearConfluence = 0
+
+if neuralSignal > 0.2
+    bullConfluence += 3
+if quantumProbability > 0.1
+    bullConfluence += 2
+if orderFlowImbalance > 0
+    bullConfluence += 2
+if smartMoneyDetection and institutionalFlow > retailFlow
+    bullConfluence += 1
+if energyMomentum
+    bullConfluence += 1
+if temporal_coherence
+    bullConfluence += 1
+if fractal_bull
+    bullConfluence += 2
+
+if neuralSignal < -0.2
+    bearConfluence += 3
+if quantumProbability < -0.1
+    bearConfluence += 2
+if orderFlowImbalance < 0
+    bearConfluence += 2
+if smartMoneyDetection and institutionalFlow > retailFlow
+    bearConfluence += 1
+if energyMomentum
+    bearConfluence += 1
+if temporal_coherence
+    bearConfluence += 1
+if fractal_bear
+    bearConfluence += 2
+
+// Signal generation with adaptive thresholds
+adaptiveThreshold = 6 + math.round(volatilitySignature * 2)
+longSignal = bullConfluence >= adaptiveThreshold and not liquidityStress
+shortSignal = bearConfluence >= adaptiveThreshold and not liquidityStress
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ADAPTIVE RISK MANAGEMENT QUANTUM FIELD
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Dynamic position sizing based on market conditions
+baseRisk = 1.5
+volatilityAdjustment = math.min(volatilitySignature * 0.5, 1.0)
+confidenceMultiplier = math.max(bullConfluence, bearConfluence) / 10.0
+adaptiveRisk = baseRisk * (1 + confidenceMultiplier - volatilityAdjustment) * riskQuantum
+
+// Quantum stop loss using uncertainty principle
+quantumUncertainty = ta.atr(14) * (1 + volatilitySignature)
+stopDistance = quantumUncertainty * (2 + math.abs(neuralSignal))
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STRATEGY EXECUTION WITH QUANTUM LOGIC
+// ══════════════════════════════════════════════════════════════════════════════
+
+if longSignal and strategy.position_size == 0
+    positionSize = (strategy.equity * adaptiveRisk / 100) / stopDistance
+    strategy.entry("Quantum Long", strategy.long, qty=positionSize)
+    strategy.exit("Quantum Long Exit", "Quantum Long",
+                 stop=close - stopDistance,
+                 trail_points=stopDistance * 0.5,
+                 trail_offset=stopDistance * 0.3)
+
+if shortSignal and strategy.position_size == 0
+    positionSize = (strategy.equity * adaptiveRisk / 100) / stopDistance
+    strategy.entry("Quantum Short", strategy.short, qty=positionSize)
+    strategy.exit("Quantum Short Exit", "Quantum Short",
+                 stop=close + stopDistance,
+                 trail_points=stopDistance * 0.5,
+                 trail_offset=stopDistance * 0.3)
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SOPHISTICATED AESTHETIC VISUALIZATION
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Neural Signal with Aurora Effect
+neuralColor = neuralSignal > 0 ?
+             color.from_gradient(neuralSignal, 0, 1, color.rgb(0, 100, 255, 80), color.rgb(0, 255, 100, 50)) :
+             color.from_gradient(neuralSignal, -1, 0, color.rgb(255, 0, 100, 50), color.rgb(255, 100, 0, 80))
+
+plot(enableAurora ? close + neuralSignal * ta.atr(14) * 2 : na,
+     title="🌌 Neural Aurora", color=neuralColor, linewidth=3, style=plot.style_line)
+
+// Quantum Probability Cloud
+probColor = quantumProbability > 0 ? color.rgb(0, 255, 150, 85) : color.rgb(255, 0, 150, 85)
+plot(enableQuantumLines ? close + quantumProbability * ta.atr(14) : na,
+     title="〰️ Quantum Probability", color=probColor, linewidth=2, style=plot.style_circles)
+
+// Energy Field Heatmap
+if enableHeatmap
+    heatmapColor = totalEnergy > energyField ? color.rgb(255, 100, 0, 70) : color.rgb(0, 100, 255, 90)
+    bgcolor(heatmapColor, title="🔥 Energy Heatmap")
+
+// Confluence Strength Indicators
+plot(bullConfluence, title="🟢 Bull Confluence", color=color.rgb(0, 255, 0, 50),
+     display=display.data_window, linewidth=1)
+plot(bearConfluence, title="🔴 Bear Confluence", color=color.rgb(255, 0, 0, 50),
+     display=display.data_window, linewidth=1)
+
+// Order Flow Rivers
+orderFlowColor = orderFlowImbalance > 0 ? color.rgb(0, 255, 100, 70) : color.rgb(255, 0, 100, 70)
+plot(close + orderFlowImbalance / 1000, title="🌊 Order Flow River",
+     color=orderFlowColor, linewidth=2, style=plot.style_stepline)
+
+// Smart Money vs Retail Visualization
+smColor = institutionalFlow > retailFlow ? color.rgb(255, 215, 0, 60) : color.rgb(128, 128, 128, 80)
+plot(smartMoneyDetection ? high + ta.atr(14) * 0.5 : na, title="💰 Smart Money",
+     color=smColor, style=plot.style_cross, linewidth=2)
+
+// Market Regime Backdrop
+regimeColor = marketRegime == "Trending" ? color.rgb(0, 255, 0, 95) :
+             marketRegime == "Mean-Reverting" ? color.rgb(255, 0, 0, 95) :
+             color.rgb(128, 128, 128, 95)
+bgcolor(regimeColor, title="📊 Market Regime", editable=false)
+
+// Signal Arrows with Neon Effect
+neonGreen = color.rgb(0, 255, 100, math.round((1 - neonIntensity) * 100))
+neonRed = color.rgb(255, 0, 100, math.round((1 - neonIntensity) * 100))
+
+plotshape(longSignal, title="🚀 Quantum Long", location=location.belowbar,
+          style=shape.arrowup, size=size.large, color=neonGreen, text="QUANTUM ⬆")
+plotshape(shortSignal, title="📉 Quantum Short", location=location.abovebar,
+          style=shape.arrowdown, size=size.large, color=neonRed, text="QUANTUM ⬇")
+
+// ══════════════════════════════════════════════════════════════════════════════
+// QUANTUM DASHBOARD
+// ══════════════════════════════════════════════════════════════════════════════
+
+if barstate.islast
+    var table quantumDash = table.new(position.top_right, 3, 12,
+                                     bgcolor=color.rgb(0, 0, 0, 80),
+                                     border_width=2,
+                                     border_color=color.rgb(0, 255, 255, 50))
+
+    // Header
+    table.cell(quantumDash, 0, 0, "🔬 QUANTUM METRICS",
+              text_color=color.rgb(0, 255, 255), bgcolor=color.rgb(0, 50, 100, 70), text_size=size.normal)
+    table.cell(quantumDash, 1, 0, "VALUE",
+              text_color=color.rgb(0, 255, 255), bgcolor=color.rgb(0, 50, 100, 70), text_size=size.normal)
+    table.cell(quantumDash, 2, 0, "STATUS",
+              text_color=color.rgb(0, 255, 255), bgcolor=color.rgb(0, 50, 100, 70), text_size=size.normal)
+
+    // Neural Intelligence
+    table.cell(quantumDash, 0, 1, "🧠 Neural Signal", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 1, str.tostring(neuralSignal, "#.###"), text_color=color.yellow, text_size=size.small)
+    neuralStatus = neuralSignal > 0.2 ? "🟢 BULL" : neuralSignal < -0.2 ? "🔴 BEAR" : "⚪ NEUTRAL"
+    table.cell(quantumDash, 2, 1, neuralStatus, text_color=color.white, text_size=size.small)
+
+    // Quantum Probability
+    table.cell(quantumDash, 0, 2, "⚛️ Quantum Prob", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 2, str.tostring(quantumProbability, "#.###"), text_color=color.yellow, text_size=size.small)
+    probStatus = quantumProbability > 0.1 ? "🟢 BULL" : quantumProbability < -0.1 ? "🔴 BEAR" : "⚪ NEUTRAL"
+    table.cell(quantumDash, 2, 2, probStatus, text_color=color.white, text_size=size.small)
+
+    // Energy Field
+    table.cell(quantumDash, 0, 3, "⚡ Energy Field", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 3, str.tostring(totalEnergy, "#.##"), text_color=color.yellow, text_size=size.small)
+    energyStatus = energyMomentum ? "🔥 HIGH" : "❄️ LOW"
+    table.cell(quantumDash, 2, 3, energyStatus, text_color=color.white, text_size=size.small)
+
+    // Market Regime
+    table.cell(quantumDash, 0, 4, "📊 Regime", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 4, str.tostring(hurstProxy, "#.##"), text_color=color.yellow, text_size=size.small)
+    table.cell(quantumDash, 2, 4, marketRegime, text_color=color.white, text_size=size.small)
+
+    // Order Flow
+    table.cell(quantumDash, 0, 5, "🌊 Order Flow", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 5, str.tostring(orderFlowImbalance, "#"), text_color=color.yellow, text_size=size.small)
+    flowStatus = orderFlowImbalance > 0 ? "🟢 BUY" : "🔴 SELL"
+    table.cell(quantumDash, 2, 5, flowStatus, text_color=color.white, text_size=size.small)
+
+    // Confluence Scores
+    table.cell(quantumDash, 0, 6, "🎯 Bull Confluence", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 6, str.tostring(bullConfluence), text_color=color.lime, text_size=size.small)
+    bullStrength = bullConfluence >= adaptiveThreshold ? "💪 STRONG" : "⚪ WEAK"
+    table.cell(quantumDash, 2, 6, bullStrength, text_color=color.white, text_size=size.small)
+
+    table.cell(quantumDash, 0, 7, "🎯 Bear Confluence", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 7, str.tostring(bearConfluence), text_color=color.red, text_size=size.small)
+    bearStrength = bearConfluence >= adaptiveThreshold ? "💪 STRONG" : "⚪ WEAK"
+    table.cell(quantumDash, 2, 7, bearStrength, text_color=color.white, text_size=size.small)
+
+    // Performance Metrics
+    table.cell(quantumDash, 0, 8, "💰 Net Profit", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 8, str.tostring(strategy.netprofit, "#.##"), text_color=strategy.netprofit > 0 ? color.lime : color.red, text_size=size.small)
+    profitStatus = strategy.netprofit > 0 ? "📈 PROFIT" : "📉 LOSS"
+    table.cell(quantumDash, 2, 8, profitStatus, text_color=color.white, text_size=size.small)
+
+    // Win Rate
+    winRate = strategy.closedtrades > 0 ? (strategy.wintrades / strategy.closedtrades) * 100 : 0
+    table.cell(quantumDash, 0, 9, "🎲 Win Rate", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 9, str.tostring(winRate, "#.#") + "%", text_color=color.yellow, text_size=size.small)
+    winStatus = winRate > 60 ? "🏆 EXCELLENT" : winRate > 50 ? "✅ GOOD" : "⚠️ POOR"
+    table.cell(quantumDash, 2, 9, winStatus, text_color=color.white, text_size=size.small)
+
+    // Risk Level
+    table.cell(quantumDash, 0, 10, "🛡️ Risk Level", text_color=color.white, text_size=size.small)
+    table.cell(quantumDash, 1, 10, str.tostring(adaptiveRisk, "#.##") + "%", text_color=color.yellow, text_size=size.small)
+    riskStatus = adaptiveRisk > 3 ? "🔴 HIGH" : adaptiveRisk > 1.5 ? "🟡 MEDIUM" : "🟢 LOW"
+    table.cell(quantumDash, 2, 10, riskStatus, text_color=color.white, text_size=size.small)
+
+    // System Status
+    table.cell(quantumDash, 0, 11, "🔋 System", text_color=color.white, text_size=size.small)
+    systemHealth = (bullConfluence + bearConfluence) / 2
+    table.cell(quantumDash, 1, 11, str.tostring(systemHealth, "#.#"), text_color=color.yellow, text_size=size.small)
+    systemStatus = systemHealth > 5 ? "🟢 ACTIVE" : systemHealth > 3 ? "🟡 READY" : "🔴 STANDBY"
+    table.cell(quantumDash, 2, 11, systemStatus, text_color=color.white, text_size=size.small)
+
+// Alerts with sophisticated conditions
+alertcondition(longSignal and bullConfluence >= 8, title="🚀 Quantum Long Alpha",
+              message="Quantum Market Dynamics: STRONG LONG signal detected! Neural: " +
+              str.tostring(neuralSignal) + ", Confluence: " + str.tostring(bullConfluence))
+alertcondition(shortSignal and bearConfluence >= 8, title="📉 Quantum Short Alpha",
+              message="Quantum Market Dynamics: STRONG SHORT signal detected! Neural: " +
+              str.tostring(neuralSignal) + ", Confluence: " + str.tostring(bearConfluence))
